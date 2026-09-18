@@ -1,0 +1,145 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: 'Amiri Quran', 'Scheherazade New', serif;
+
+  /* Yorug' rejim qiymatlari — qorong'i rejimda :root.dark ostida qayta yoziladi */
+  --color-bg: #f6f6f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0f0f2;
+  --color-line: #e3e3e7;
+  --color-ink: #17181b;
+  --color-ink-soft: #55565e;
+  --color-ink-faint: #9b9ca5;
+  --color-accent: #157c85;
+  --color-accent-hover: #10646c;
+  --color-accent-soft: #e4f2f3;
+
+  --animate-rise: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade: fade 0.25s ease-out both;
+}
+
+/* O'qish matni o'lchamlari — Sozlamalar bo'limidan boshqariladi (1 = standart) */
+:root {
+  --arabic-scale: 1;
+  --uz-scale: 1;
+}
+
+:root.dark {
+  --color-bg: #0f1012;
+  --color-surface: #1c1d21;
+  --color-surface-2: #26272c;
+  --color-line: #2c2d34;
+  --color-ink: #f2f2f4;
+  --color-ink-soft: #a0a1aa;
+  --color-ink-faint: #6e6f79;
+  --color-accent: #4ec3cc;
+  --color-accent-hover: #6ad3db;
+  --color-accent-soft: #14343a;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: var(--color-line);
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  /* Oyat arabchasi */
+  .txt-arabic {
+    font-size: calc(27px * var(--arabic-scale));
+    line-height: 2.3;
+  }
+
+  /* Uzluksiz (mushaf uslubidagi) arabcha oqim matni */
+  .txt-arabic-flow {
+    font-size: calc(26px * var(--arabic-scale));
+  }
+
+  /* O'zbekcha tarjima */
+  .txt-uz {
+    font-size: calc(17px * var(--uz-scale));
+    line-height: 1.9;
+  }
+
+  /* Transkripsiya, tafsir kabi ikkinchi darajali matnlar */
+  .txt-uz-sub {
+    font-size: calc(14px * var(--uz-scale));
+    line-height: 1.75;
+  }
+
+  @media (min-width: 640px) {
+    .txt-arabic {
+      font-size: calc(30px * var(--arabic-scale));
+    }
+
+    .txt-arabic-flow {
+      font-size: calc(30px * var(--arabic-scale));
+    }
+  }
+}
+
+@utility arabic {
+  font-family: var(--font-arabic);
+  direction: rtl;
+  text-align: right;
+  line-height: 2.3;
+}
+
+/* Mushaf sahifasi: satrlar markazda, quron beti kabi */
+@utility mushaf {
+  font-family: var(--font-arabic);
+  direction: rtl;
+  text-align: center;
+  line-height: 2.6;
+  word-spacing: 0.1em;
+}
