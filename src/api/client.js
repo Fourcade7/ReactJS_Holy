@@ -167,8 +167,6 @@ export const wordsApi = {
 }
 
 export const dataApi = {
-  /** JSON fayllarni bazadan qayta yozish — faqat API ishlab turganda */
-  export: () => http.post('/export').then((r) => r.data),
   meta: () => json('meta.json').catch(() => null),
   health: () => http.get('/health', { timeout: 2500 }).then((r) => r.data),
 }

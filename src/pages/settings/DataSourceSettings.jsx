@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react'
 import {
   SOURCE_EVENT,
   dataApi,
-  errorMessage,
   getSourceMode,
   resolvedSource,
   setSourceMode,
 } from '../../api/client.js'
-import { Alert, Badge, Button, Card, SectionTitle, cn } from '../../components/Ui.jsx'
+import { Badge, Card, SectionTitle, cn } from '../../components/Ui.jsx'
 
 const MODES = [
   {
@@ -27,14 +26,46 @@ const MODES = [
   },
 ]
 
+const ZIP_PATH = '/data.zip'
+
+function formatSize(bytes) {
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`
+}
+
+/**
+ * Arxiv bor-yo'qligini va hajmini HEAD so'rovi bilan bilib olamiz.
+ * Fayl yo'q bo'lsa dev server index.html qaytaradi — shuning uchun turini tekshiramiz.
+ */
+async function fetchZipSize() {
+  try {
+    const response = await fetch(ZIP_PATH, { method: 'HEAD' })
+    const type = response.headers.get('content-type') ?? ''
+    if (!response.ok || type.includes('text/html')) return null
+    return Number(response.headers.get('content-length')) || null
+  } catch {
+    return null
+  }
+}
+
+function Stat({ label, value, strong = false }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className="text-ink-faint">{label}</dt>
+      <dd className={cn('font-semibold', strong ? 'text-accent' : 'text-ink')}>
+        {typeof value === 'number' ? value.toLocaleString('uz') : value}
+      </dd>
+    </div>
+  )
+}
+
 export default function DataSourceSettings() {
   const [mode, setMode] = useState(() => getSourceMode())
   const [active, setActive] = useState(() => resolvedSource())
   const [apiOnline, setApiOnline] = useState(null)
   const [meta, setMeta] = useState(null)
-  const [exporting, setExporting] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [zipSize, setZipSize] = useState(null)
+  const jsonOnly = mode === 'json'
 
   useEffect(() => {
     function onChange(event) {
@@ -45,35 +76,22 @@ export default function DataSourceSettings() {
   }, [])
 
   useEffect(() => {
+    dataApi.meta().then(setMeta)
+    fetchZipSize().then(setZipSize)
+
+    /* "Faqat fayllar" rejimida serverga umuman murojaat qilinmaydi */
+    if (jsonOnly) return
     dataApi
       .health()
       .then(() => setApiOnline(true))
       .catch(() => setApiOnline(false))
-    dataApi.meta().then(setMeta)
-  }, [])
+  }, [jsonOnly])
 
   function chooseMode(next) {
     setMode(next)
     setSourceMode(next)
     /* Ochilgan sahifalar eski manbadan olingan ma'lumot bilan qolmasligi uchun */
     window.location.reload()
-  }
-
-  async function runExport() {
-    setExporting(true)
-    setError('')
-    setSuccess('')
-    try {
-      const result = await dataApi.export()
-      setSuccess(
-        `${result.files} ta fayl yozildi (${result.sizeMb} MB, ${result.seconds} soniya)`,
-      )
-      setMeta(result.meta)
-    } catch (err) {
-      setError(errorMessage(err))
-    } finally {
-      setExporting(false)
-    }
   }
 
   return (
@@ -89,23 +107,27 @@ export default function DataSourceSettings() {
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between gap-3">
             <span className="text-ink-soft text-sm">NestJS + PostgreSQL</span>
-            <span className="flex items-center gap-2 text-[13px] font-semibold">
-              <span
-                className={cn(
-                  'h-2 w-2 rounded-full',
-                  apiOnline === null
-                    ? 'bg-line'
-                    : apiOnline
-                      ? 'bg-accent'
-                      : 'bg-red-500',
-                )}
-              />
-              {apiOnline === null
-                ? 'tekshirilmoqda…'
-                : apiOnline
-                  ? 'ishlayapti'
-                  : 'ishlamayapti'}
-            </span>
+            {jsonOnly ? (
+              <span className="text-ink-faint text-[13px] font-semibold">ishlatilmaydi</span>
+            ) : (
+              <span className="flex items-center gap-2 text-[13px] font-semibold">
+                <span
+                  className={cn(
+                    'h-2 w-2 rounded-full',
+                    apiOnline === null
+                      ? 'bg-line'
+                      : apiOnline
+                        ? 'bg-accent'
+                        : 'bg-red-500',
+                  )}
+                />
+                {apiOnline === null
+                  ? 'tekshirilmoqda…'
+                  : apiOnline
+                    ? 'ishlayapti'
+                    : 'ishlamayapti'}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center justify-between gap-3">
@@ -120,32 +142,50 @@ export default function DataSourceSettings() {
         </div>
 
         {meta ? (
-          <div className="border-line text-ink-faint mt-5 border-t pt-4 text-[13px] leading-relaxed">
-            Fayllar {new Date(meta.generatedAt).toLocaleString('uz')} da tayyorlangan:{' '}
-            {meta.surahs} sura, {meta.ayahs} oyat, {meta.pages} sahifa, {meta.mushafPages}{' '}
-            mushaf beti, {meta.words} qiyin soʻz.
-          </div>
+          <dl className="border-line mt-5 grid grid-cols-2 gap-x-6 gap-y-2.5 border-t pt-4 text-[13px]">
+            <Stat label="Suralar" value={meta.surahs} />
+            <Stat label="Oyatlar" value={meta.ayahs} />
+            <Stat label="Sahifalar" value={meta.pages} />
+            <Stat label="Mushaf betlari" value={meta.mushafPages} />
+            <Stat label="Qiyin soʻzlar" value={meta.words} />
+            <Stat label="Fayllar soni" value={meta.files} />
+            {meta.totalBytes ? (
+              <div className="col-span-2">
+                <Stat label="JSON umumiy hajmi" value={formatSize(meta.totalBytes)} strong />
+              </div>
+            ) : null}
+          </dl>
         ) : null}
 
-        <div className="mt-5">
-          <Button
-            variant="primary"
-            onClick={runExport}
-            disabled={exporting || apiOnline === false}
+        {zipSize ? (
+          <a
+            href={ZIP_PATH}
+            download="data.zip"
+            className="border-line bg-surface-2 text-ink hover:border-accent/50 mt-5 flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors"
           >
-            {exporting ? 'Yozilmoqda…' : 'JSON fayllarni bazadan yangilash'}
-          </Button>
-          {apiOnline === false ? (
-            <p className="text-ink-faint mt-2 text-xs">
-              Buning uchun baza serveri ishlab turishi kerak.
-            </p>
-          ) : null}
-        </div>
+            <svg
+              viewBox="0 0 24 24"
+              className="text-accent h-5 w-5 flex-none"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+            </svg>
+            <span className="flex-1">
+              <span className="block text-sm font-semibold">data.zip yuklab olish</span>
+              <span className="text-ink-faint block text-xs">
+                public papkasidagi tayyor arxiv
+              </span>
+            </span>
+            <span className="text-ink-soft text-[13px] font-semibold">
+              {formatSize(zipSize)}
+            </span>
+          </a>
+        ) : null}
 
-        <div className="mt-4 space-y-2">
-          <Alert>{error}</Alert>
-          <Alert tone="success">{success}</Alert>
-        </div>
       </Card>
 
       <Card className="p-6">
