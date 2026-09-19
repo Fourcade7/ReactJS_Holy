@@ -2,12 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { errorMessage, pageApi } from '../api/client.js'
 import MushafPage from '../components/MushafPage.jsx'
-import {
-  AyahHoverScope,
-  MushafText,
-  ReaderPager,
-  TranslationFlow,
-} from '../components/Quran.jsx'
+import PageReadMark from '../components/PageReadMark.jsx'
+import PageTranslation from '../components/PageTranslation.jsx'
+import { AyahHoverScope, MushafText, ReaderPager } from '../components/Quran.jsx'
 import {
   Badge,
   Button,
@@ -96,7 +93,7 @@ export default function PageReadPage() {
       {error ? (
         <EmptyState
           title={`${current}-sahifa boʻyicha maʼlumot yoʻq`}
-          hint="Bu sahifa bazada topilmadi."
+          hint="Bu sahifa maʼlumot fayllarida topilmadi."
         />
       ) : null}
 
@@ -147,7 +144,7 @@ export default function PageReadPage() {
                   {page.translationUz}
                 </p>
               ) : page.ayahs.length > 0 ? (
-                <TranslationFlow ayahs={page.ayahs} />
+                <PageTranslation ayahs={page.ayahs} />
               ) : (
                 <p className="text-ink-faint text-center text-sm italic">
                   Bu sahifaning tarjimasi kiritilmagan
@@ -162,6 +159,8 @@ export default function PageReadPage() {
               </p>
             ) : null}
           </Card>
+
+          <PageReadMark pageNumber={current} />
         </>
       ) : null}
 

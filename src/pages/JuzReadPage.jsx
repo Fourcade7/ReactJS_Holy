@@ -9,6 +9,7 @@ import {
   TranslationFlow,
 } from '../components/Quran.jsx'
 import MushafPage from '../components/MushafPage.jsx'
+import PageTranslation from '../components/PageTranslation.jsx'
 import {
   Alert,
   Button,
@@ -132,7 +133,7 @@ export default function JuzReadPage() {
         ) : ayahs.length === 0 ? (
           <EmptyState
             title={`${current}-juzda oyat topilmadi`}
-            hint="Bu juz bo'yicha ma'lumot bazada yo'q."
+            hint="Bu juz boʻyicha maʼlumot fayllarda topilmadi."
           />
         ) : viewMode === 'ayah' ? (
           <Card className="divide-line divide-y overflow-hidden">
@@ -161,7 +162,13 @@ export default function JuzReadPage() {
               {showArabic && showTranslation ? (
                 <div className="bg-line my-7 h-px" />
               ) : null}
-              {showTranslation ? <TranslationFlow ayahs={group.ayahs} /> : null}
+              {showTranslation ? (
+                group.pageNumber ? (
+                  <PageTranslation pageNumber={group.pageNumber} ayahs={group.ayahs} />
+                ) : (
+                  <TranslationFlow ayahs={group.ayahs} />
+                )
+              ) : null}
             </AyahHoverScope>
           </Card>
         ) : null}

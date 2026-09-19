@@ -42,6 +42,13 @@
   --color-accent-soft: #14343a;
 }
 
+/* Sura sarlavhalari uchun KFGQPC xattotlik shrifti: "018 surah" → «سورة الكهف» */
+@font-face {
+  font-family: 'surah-names';
+  src: url('/fonts/surah-names/sura_names.woff2') format('woff2');
+  font-display: block;
+}
+
 @keyframes rise {
   from {
     opacity: 0;

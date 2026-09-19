@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { PageHeader, cn } from '../components/Ui.jsx'
 import DataSourceSettings from './settings/DataSourceSettings.jsx'
 import TextSettings from './settings/TextSettings.jsx'
+import XatmSettings from './settings/XatmSettings.jsx'
 
 const TABS = [
   {
@@ -12,7 +13,12 @@ const TABS = [
   {
     id: 'data',
     label: "Maʼlumot manbai",
-    hint: 'Sayt bazadan yoki statik JSON fayllardan oʻqishi mumkin.',
+    hint: 'Sayt public/data ichidagi statik JSON fayllardan oʻqiydi.',
+  },
+  {
+    id: 'xatm',
+    label: 'Xatm',
+    hint: 'Oʻqilgan sahifalar belgilari — shu brauzerda saqlanadi.',
   },
 ]
 
@@ -42,6 +48,7 @@ export default function SettingsPage() {
       <div className="animate-fade">
         {tab === 'text' ? <TextSettings /> : null}
         {tab === 'data' ? <DataSourceSettings /> : null}
+        {tab === 'xatm' ? <XatmSettings /> : null}
       </div>
     </>
   )

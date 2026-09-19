@@ -9,8 +9,11 @@ import {
   TranslationFlow,
 } from '../components/Quran.jsx'
 import MushafPage from '../components/MushafPage.jsx'
+import PageReadMark from '../components/PageReadMark.jsx'
+import PageTranslation from '../components/PageTranslation.jsx'
 import { Alert, Badge, Card, EmptyState, Loader, Segmented } from '../components/Ui.jsx'
 import { saveLastRead } from '../lib/lastRead.js'
+import { surahXatmStatus, useXatm } from '../lib/xatm.js'
 import { TEXT_MODES, VIEW_MODES, groupByPage, usePref } from '../lib/reading.js'
 
 const AYAHS_PER_VIEW = 10
@@ -23,6 +26,7 @@ export default function SurahReadPage() {
   const [viewMode, setViewMode] = usePref('view-mode', 'ayah')
   const [textMode, setTextMode] = usePref('text-mode', 'both')
   const [cursor, setCursor] = useState(0)
+  const xatm = useXatm()
   const { hash } = useLocation()
   const readerRef = useRef(null)
 
@@ -94,6 +98,7 @@ export default function SurahReadPage() {
   const showArabic = textMode !== 'translation'
   const showTranslation = textMode !== 'arabic'
   const surahNumber = surah.number
+  const xatmStatus = surahXatmStatus(xatm, surahNumber)
 
   const visibleAyahs =
     viewMode === 'ayah'
@@ -175,6 +180,16 @@ export default function SurahReadPage() {
                 {surah.totalAyahs ? ` / ${surah.totalAyahs}` : ''} oyat
               </Badge>
               {surah.startPage ? <Badge>{surah.startPage}-sahifadan</Badge> : null}
+              {xatmStatus ? (
+                <Badge
+                  className="bg-emerald-500/10! text-emerald-500! tabular-nums"
+                  title={`${xatmStatus.from}–${xatmStatus.to}-betlar`}
+                >
+                  {xatmStatus.done
+                    ? `✓ Toʻliq oʻqildi · ${xatmStatus.total} bet`
+                    : `${xatmStatus.read}/${xatmStatus.total} bet oʻqildi · ${xatmStatus.total - xatmStatus.read} ta qoldi`}
+                </Badge>
+              ) : null}
             </div>
           </div>
         </div>
@@ -189,7 +204,7 @@ export default function SurahReadPage() {
         {surah.ayahs.length === 0 ? (
           <EmptyState
             title="Bu surada hali oyat yo'q"
-            hint="Sozlamalar → Oyatlar boʻlimidan oyatlarni birma-bir qoʻshing."
+            hint="Bu suraning oyatlari maʼlumot fayllarida topilmadi."
           />
         ) : viewMode === 'ayah' ? (
           <Card className="divide-line divide-y overflow-hidden">
@@ -221,10 +236,22 @@ export default function SurahReadPage() {
                 <div className="bg-line my-7 h-px" />
               ) : null}
               {showTranslation ? (
-                <TranslationFlow ayahs={group.ayahs} surahNumber={surahNumber} />
+                group.pageNumber ? (
+                  <PageTranslation
+                    pageNumber={group.pageNumber}
+                    ayahs={group.ayahs}
+                    surahNumber={surahNumber}
+                  />
+                ) : (
+                  <TranslationFlow ayahs={group.ayahs} surahNumber={surahNumber} />
+                )
               ) : null}
             </AyahHoverScope>
           </Card>
+        ) : null}
+
+        {viewMode === 'page' && group?.pageNumber ? (
+          <PageReadMark pageNumber={group.pageNumber} />
         ) : null}
       </div>
 
