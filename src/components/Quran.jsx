@@ -136,6 +136,7 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
           surahNumber={ayah.surah?.number ?? ayah.surahId}
           ayahNumber={ayah.numberInSurah}
           pageNumber={ayah.pageNumber}
+          fitToPage
           fallback={
             <p className="arabic txt-arabic text-ink">
               <HoverWords text={ayah.textArabic} />

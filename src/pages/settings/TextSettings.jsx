@@ -1,3 +1,4 @@
+import MushafAyah from '../../components/MushafAyah.jsx'
 import { Button, Card, SectionTitle, cn } from '../../components/Ui.jsx'
 import {
   DEFAULT_SCALE,
@@ -94,7 +95,14 @@ export default function TextSettings() {
           value={arabicScale}
           onChange={setArabicScale}
         >
-          <p className="arabic txt-arabic text-ink">{SAMPLE_ARABIC}</p>
+          {/* Namuna — Fotiha 2-oyati, kitobdagi (1-sahifa) mushaf shriftida */}
+          <MushafAyah
+            surahNumber={1}
+            ayahNumber={2}
+            pageNumber={1}
+            lineHeight={1.8}
+            fallback={<p className="arabic txt-arabic text-ink">{SAMPLE_ARABIC}</p>}
+          />
         </ScaleControl>
 
         <ScaleControl

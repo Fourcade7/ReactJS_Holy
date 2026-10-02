@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { errorMessage, pageApi, surahApi } from '../api/client.js'
+import { usePref } from '../lib/reading.js'
 import { formatReadAt, toggleXatmPage, useXatm } from '../lib/xatm.js'
 import {
   Alert,
@@ -79,6 +80,7 @@ export default function PageListPage() {
   const [jump, setJump] = useState('')
   const navigate = useNavigate()
   const xatm = useXatm()
+  const [order, setOrder] = usePref('page-order', 'asc')
 
   useEffect(() => {
     pageApi
@@ -116,6 +118,12 @@ export default function PageListPage() {
     return result
   }, [surahs])
 
+  const visiblePages = useMemo(
+    () =>
+      [...pages].sort((a, b) => (order === 'asc' ? a.number - b.number : b.number - a.number)),
+    [pages, order],
+  )
+
   function onJump(event) {
     event.preventDefault()
     const target = Number(jump)
@@ -132,20 +140,42 @@ export default function PageListPage() {
             : `${pages.length} ta sahifada maʼlumot bor · mushaf boʻyicha 1–604`
         }
       >
-        <form className="flex items-center gap-2" onSubmit={onJump}>
-          <Input
-            type="number"
-            min="1"
-            max="604"
-            placeholder="Sahifa №"
-            value={jump}
-            onChange={(event) => setJump(event.target.value)}
-            className="w-32 text-center"
-          />
-          <Button variant="primary" type="submit">
-            O'tish
-          </Button>
-        </form>
+        <div className="flex flex-wrap items-center gap-5">
+          {/* Suralar bo'limidagi kabi tartib almashtirgich */}
+          <button
+            onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
+            className="text-ink-faint hover:text-ink flex cursor-pointer items-center gap-1.5 text-xs font-semibold tracking-wider uppercase transition-colors"
+          >
+            Tartib:
+            <span className="text-ink">{order === 'asc' ? 'Oʻsish' : 'Kamayish'}</span>
+            <svg
+              viewBox="0 0 24 24"
+              className={`h-3.5 w-3.5 transition-transform duration-200 ${order === 'asc' ? '' : 'rotate-180'}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 15l-6-6-6 6" />
+            </svg>
+          </button>
+
+          <form className="flex items-center gap-2" onSubmit={onJump}>
+            <Input
+              type="number"
+              min="1"
+              max="604"
+              placeholder="Sahifa №"
+              value={jump}
+              onChange={(event) => setJump(event.target.value)}
+              className="w-40! text-center"
+            />
+            <Button variant="primary" type="submit">
+              O'tish
+            </Button>
+          </form>
+        </div>
       </PageHeader>
 
       <Alert>{error}</Alert>
@@ -164,7 +194,7 @@ export default function PageListPage() {
         />
       ) : (
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10">
-          {pages.map((page, index) => {
+          {visiblePages.map((page, index) => {
             const surahInfo = surahsByPage.get(page.number)
             const startsSurah = surahInfo?.starting.length > 0
             const readAt = xatm[page.number]
