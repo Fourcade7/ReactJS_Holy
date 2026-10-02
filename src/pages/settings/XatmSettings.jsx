@@ -7,6 +7,7 @@ import {
   resetXatm,
   setXatmRange,
   useXatm,
+  xatmStartedAt,
 } from '../../lib/xatm.js'
 
 /* Bir necha betni birdaniga belgilash: masalan, boshqa joyda o'qilgan 21–30-betlar */
@@ -57,7 +58,7 @@ function RangeMark() {
           placeholder="dan"
           value={from}
           onChange={(event) => setFrom(event.target.value)}
-          className="w-24! rounded-full text-center"
+          className="w-24! text-center"
           aria-label="Boshlanish sahifasi"
         />
         <span className="text-ink-faint">–</span>
@@ -68,7 +69,7 @@ function RangeMark() {
           placeholder="gacha"
           value={to}
           onChange={(event) => setTo(event.target.value)}
-          className="w-24! rounded-full text-center"
+          className="w-24! text-center"
           aria-label="Tugash sahifasi"
         />
         <Button
@@ -99,6 +100,7 @@ export default function XatmSettings() {
 
   const entries = Object.entries(xatm)
   const readCount = entries.length
+  const startedAt = xatmStartedAt(xatm)
   const percent = Math.round((readCount / TOTAL_PAGES) * 1000) / 10
   /* Oraliq bilan belgilanganda vaqtlar bir xil bo'ladi — u holda eng katta bet oxirgisi */
   const last = entries.reduce(
@@ -135,6 +137,9 @@ export default function XatmSettings() {
         <p className="text-ink-faint mt-4 text-sm">
           {last ? (
             <>
+              Boshlangan vaqti:{' '}
+              <span className="text-ink font-semibold">{formatReadAt(startedAt)}</span>
+              <span className="text-line mx-2.5">|</span>
               Oxirgi belgilangan:{' '}
               <Link to={`/page/${last[0]}`} className="text-ink hover:text-accent font-semibold">
                 {last[0]}-sahifa

@@ -75,7 +75,7 @@ export default function ThemeSwitch() {
   }, [mode])
 
   return (
-    <div className="bg-surface-2 border-line flex items-center gap-0.5 rounded-xl border p-1">
+    <div className="bg-surface-2 border-line flex items-center gap-0.5 rounded-md border p-[3px]">
       {MODES.map((item) => (
         <button
           key={item.value}
@@ -83,7 +83,7 @@ export default function ThemeSwitch() {
           title={item.title}
           aria-label={item.title}
           className={cn(
-            'flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg transition-colors',
+            'flex h-6 w-6 cursor-pointer items-center justify-center rounded-md transition-colors',
             mode === item.value
               ? 'bg-surface text-ink shadow-sm'
               : 'text-ink-faint hover:text-ink',

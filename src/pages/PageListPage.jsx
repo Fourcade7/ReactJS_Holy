@@ -20,7 +20,7 @@ function SurahLabel({ info }) {
     const [first, ...rest] = info.starting
     return (
       <span
-        className="bg-accent/10 text-accent max-w-full truncate rounded-full px-2 py-0.5 text-[11px] font-semibold"
+        className="bg-accent/10 text-accent max-w-full truncate rounded-md px-2 py-0.5 text-[11px] font-semibold"
         title={info.starting.map((surah) => `${surah.number}. ${surah.nameUz}`).join(', ')}
       >
         {first.number}. {first.nameUz}
@@ -140,7 +140,7 @@ export default function PageListPage() {
             placeholder="Sahifa №"
             value={jump}
             onChange={(event) => setJump(event.target.value)}
-            className="w-32 rounded-full text-center"
+            className="w-32 text-center"
           />
           <Button variant="primary" type="submit">
             O'tish
@@ -151,7 +151,7 @@ export default function PageListPage() {
       <Alert>{error}</Alert>
 
       {loading ? (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-7">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10">
           {Array.from({ length: 14 }).map((_, index) => (
             <Skeleton key={index} className="h-[74px]" />
           ))}
@@ -163,7 +163,7 @@ export default function PageListPage() {
           hint="public/data/pages.json fayli topilmadi yoki boʻsh."
         />
       ) : (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-7">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10">
           {pages.map((page, index) => {
             const surahInfo = surahsByPage.get(page.number)
             const startsSurah = surahInfo?.starting.length > 0

@@ -6,11 +6,14 @@ import QuranNav from './QuranNav.jsx'
 import Sidebar from './Sidebar.jsx'
 import ThemeSwitch from './ThemeSwitch.jsx'
 import { cn } from './Ui.jsx'
+import XatmProgress from './XatmProgress.jsx'
 
 export default function Layout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const location = useLocation()
   const isReading = /^\/(surah|page|juz)\/\d+/.test(location.pathname)
+  /* Ro'yxatlar kengroq: Sahifalar keng ekranda 10 ustun, bosh sahifada sura nomlari to'liq sig'ishi uchun */
+  const listWidth = { '/pages': '80rem', '/': '72rem' }[location.pathname]
 
   useEffect(() => {
     setDrawerOpen(false)
@@ -23,7 +26,7 @@ export default function Layout() {
           <button
             onClick={() => setDrawerOpen(true)}
             aria-label="Menyu"
-            className="text-ink-soft hover:bg-surface-2 hover:text-ink flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl transition-colors lg:hidden"
+            className="text-ink-soft hover:bg-surface-2 hover:text-ink flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors lg:hidden"
           >
             <svg
               viewBox="0 0 24 24"
@@ -38,7 +41,7 @@ export default function Layout() {
           </button>
 
           <Link to="/" className="flex w-[228px] flex-none items-center gap-2.5">
-            <span className="bg-accent font-arabic flex h-9 w-9 items-center justify-center rounded-xl text-base text-white">
+            <span className="bg-accent font-arabic flex h-9 w-9 items-center justify-center rounded-md text-base text-white">
               ق
             </span>
             <span className="leading-tight">
@@ -56,6 +59,7 @@ export default function Layout() {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <XatmProgress />
             <ContinueReading />
             <ThemeSwitch />
             <Link
@@ -63,7 +67,7 @@ export default function Layout() {
               title="Sozlamalar"
               aria-label="Sozlamalar"
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-xl transition-colors',
+                'flex h-8 w-8 items-center justify-center rounded-md transition-colors',
                 location.pathname === '/settings'
                   ? 'bg-surface-2 text-accent'
                   : 'text-ink-soft hover:bg-surface-2 hover:text-ink',
@@ -106,7 +110,9 @@ export default function Layout() {
       <main className="pt-16 lg:pl-60">
         <div
           className="mx-auto w-full px-4 py-8 sm:px-6"
-          style={isReading ? readingWidth(56) : { maxWidth: '56rem' }}
+          style={
+            isReading ? readingWidth(56) : { maxWidth: listWidth ?? '56rem' }
+          }
         >
           <div className="mb-6 sm:hidden">
             <QuranNav />

@@ -7,7 +7,7 @@ export function cn(...parts) {
 export function Card({ className, children, ...rest }) {
   return (
     <div
-      className={cn('bg-surface border-line rounded-2xl border', className)}
+      className={cn('bg-surface border-line rounded-md border', className)}
       {...rest}
     >
       {children}
@@ -38,9 +38,9 @@ const BUTTON_VARIANTS = {
 }
 
 const BUTTON_SIZES = {
-  sm: 'h-8 gap-1.5 px-3 text-[13px]',
-  md: 'h-10 gap-2 px-4 text-sm',
-  icon: 'h-9 w-9 justify-center',
+  sm: 'h-7 gap-1.5 px-2.5 text-xs',
+  md: 'h-8 gap-1.5 px-3 text-[13px]',
+  icon: 'h-8 w-8 justify-center',
 }
 
 export function Button({
@@ -53,7 +53,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex cursor-pointer items-center rounded-full font-semibold transition-all duration-150',
+        'inline-flex cursor-pointer items-center rounded-md font-semibold transition-all duration-150',
         'focus-visible:outline-accent focus-visible:outline-2 focus-visible:outline-offset-2',
         'active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
         BUTTON_SIZES[size],
@@ -72,7 +72,7 @@ export function Segmented({ options, value, onChange, className }) {
   return (
     <div
       className={cn(
-        'bg-surface-2 border-line inline-flex gap-1 rounded-full border p-1',
+        'bg-surface-2 border-line inline-flex gap-0.5 rounded-md border p-0.5',
         className,
       )}
     >
@@ -82,7 +82,7 @@ export function Segmented({ options, value, onChange, className }) {
           type="button"
           onClick={() => onChange(option.value)}
           className={cn(
-            'cursor-pointer rounded-full px-4 py-1.5 text-[13px] font-semibold whitespace-nowrap transition-all duration-150',
+            'cursor-pointer rounded-md px-3 py-1 text-xs font-semibold whitespace-nowrap transition-all duration-150',
             value === option.value
               ? 'bg-ink text-bg shadow-sm'
               : 'text-ink-soft hover:text-ink',
@@ -95,19 +95,42 @@ export function Segmented({ options, value, onChange, className }) {
   )
 }
 
+/* Bo'lim tablari — Sozlamalar va bosh sahifada bir xil ko'rinish */
+export function Tabs({ tabs, value, onChange, className }) {
+  return (
+    <div
+      className={cn('bg-surface-2 border-line inline-flex rounded-md border p-0.5', className)}
+    >
+      {tabs.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          onClick={() => onChange(item.id)}
+          className={cn(
+            'cursor-pointer rounded-md px-3 py-1 text-[13px] font-semibold transition-all duration-150',
+            value === item.id ? 'bg-ink text-bg' : 'text-ink-soft hover:text-ink',
+          )}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 /* ---------------- Form controls ---------------- */
 
 const CONTROL_BASE =
-  'w-full rounded-xl border border-line bg-surface-2 px-3.5 py-2.5 text-sm text-ink transition-all duration-150 placeholder:text-ink-faint focus:border-accent focus:ring-4 focus:ring-accent/15 focus:outline-none'
+  'w-full rounded-md border border-line bg-surface-2 px-3.5 text-sm text-ink transition-all duration-150 placeholder:text-ink-faint focus:border-accent focus:ring-4 focus:ring-accent/15 focus:outline-none'
 
 export function Input({ className, ...rest }) {
-  return <input className={cn(CONTROL_BASE, className)} {...rest} />
+  return <input className={cn(CONTROL_BASE, 'h-8', className)} {...rest} />
 }
 
 export function Textarea({ className, ...rest }) {
   return (
     <textarea
-      className={cn(CONTROL_BASE, 'resize-y leading-relaxed', className)}
+      className={cn(CONTROL_BASE, 'resize-y py-2.5 leading-relaxed', className)}
       {...rest}
     />
   )
@@ -116,7 +139,7 @@ export function Textarea({ className, ...rest }) {
 export function ArabicTextarea({ className, ...rest }) {
   return (
     <textarea
-      className={cn(CONTROL_BASE, 'arabic resize-y text-2xl leading-[2.4]', className)}
+      className={cn(CONTROL_BASE, 'arabic resize-y py-2.5 text-2xl leading-[2.4]', className)}
       {...rest}
     />
   )
@@ -124,7 +147,7 @@ export function ArabicTextarea({ className, ...rest }) {
 
 export function Select({ className, children, ...rest }) {
   return (
-    <select className={cn(CONTROL_BASE, 'cursor-pointer pr-9', className)} {...rest}>
+    <select className={cn(CONTROL_BASE, 'h-8 cursor-pointer pr-9', className)} {...rest}>
       {children}
     </select>
   )
@@ -151,7 +174,7 @@ export function Badge({ tone = 'neutral', className, children, ...rest }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+        'inline-flex items-center gap-1 rounded-md px-2.5 py-0.5 text-xs font-semibold',
         BADGE_TONES[tone],
         className,
       )}
@@ -182,7 +205,7 @@ export function Alert({ tone = 'error', children }) {
   return (
     <div
       className={cn(
-        'animate-fade rounded-xl px-3.5 py-2.5 text-sm font-medium',
+        'animate-fade rounded-md px-3.5 py-2.5 text-sm font-medium',
         tone === 'error'
           ? 'bg-red-500/10 text-red-500'
           : 'bg-accent/12 text-accent',
@@ -194,7 +217,7 @@ export function Alert({ tone = 'error', children }) {
 }
 
 export function Skeleton({ className }) {
-  return <div className={cn('bg-surface-2 animate-pulse rounded-xl', className)} />
+  return <div className={cn('bg-surface-2 animate-pulse rounded-md', className)} />
 }
 
 export function Loader({ rows = 3 }) {
@@ -209,8 +232,8 @@ export function Loader({ rows = 3 }) {
 
 export function EmptyState({ icon = '۞', title, hint, action }) {
   return (
-    <div className="border-line flex flex-col items-center rounded-2xl border border-dashed px-6 py-14 text-center">
-      <div className="bg-surface-2 text-ink-faint mb-3 flex h-11 w-11 items-center justify-center rounded-full text-lg">
+    <div className="border-line flex flex-col items-center rounded-md border border-dashed px-6 py-14 text-center">
+      <div className="bg-surface-2 text-ink-faint mb-3 flex h-11 w-11 items-center justify-center rounded-md text-lg">
         {icon}
       </div>
       <p className="text-ink font-semibold">{title}</p>
@@ -225,7 +248,7 @@ export function Diamond({ children, className }) {
   return (
     <span
       className={cn(
-        'bg-surface-2 flex h-11 w-11 flex-none rotate-45 items-center justify-center rounded-lg transition-colors',
+        'bg-surface-2 flex h-11 w-11 flex-none rotate-45 items-center justify-center rounded-md transition-colors',
         className,
       )}
     >

@@ -82,7 +82,7 @@ export default function JuzListPage() {
                 <span className="text-ink-faint text-[11px] tabular-nums">
                   {fromSurah}:{fromAyah} – {toSurah}:{toAyah}
                 </span>
-                <span className="bg-accent/10 text-accent mt-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums">
+                <span className="bg-accent/10 text-accent mt-0.5 rounded-md px-2 py-0.5 text-[11px] font-semibold tabular-nums">
                   {fromPage}–{toPage}-bet
                 </span>
                 <span className="text-ink-faint text-[11px]">

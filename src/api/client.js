@@ -5,10 +5,14 @@
 
 const DATA_DIR = '/data'
 
-async function json(path) {
+async function request(path) {
   const response = await fetch(`${DATA_DIR}/${path}`)
   if (!response.ok) throw new Error(`${path} topilmadi`)
-  return response.json()
+  return response
+}
+
+async function json(path) {
+  return (await request(path)).json()
 }
 
 export function errorMessage(error) {
@@ -60,4 +64,7 @@ export const wordsApi = {
 
 export const dataApi = {
   meta: () => json('meta.json').catch(() => null),
+  manifest: () => json('manifest.json'),
+  /** Faylning xom baytlari — arxivga o'zgartirmasdan yozish uchun */
+  bytes: async (path) => new Uint8Array(await (await request(path)).arrayBuffer()),
 }

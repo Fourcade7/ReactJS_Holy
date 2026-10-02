@@ -19,6 +19,10 @@
   --color-accent-hover: #10646c;
   --color-accent-soft: #e4f2f3;
 
+  /* Yagona burchak radiusi — kartalar, tugmalar, tablar, inputlar hammasi rounded-md.
+     Doira shaklidagi belgilar (nuqta, progress chizig'i) bundan mustasno. */
+  --radius-md: 0.375rem;
+
   --animate-rise: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade: fade 0.25s ease-out both;
 }
@@ -105,6 +109,11 @@
   .txt-arabic {
     font-size: calc(27px * var(--arabic-scale));
     line-height: 2.3;
+  }
+
+  /* Oyat bo'yicha rejim: sahifa rejimidagi KFGQPC mushaf shriftida */
+  .txt-mushaf-ayah {
+    font-size: calc(30px * var(--arabic-scale));
   }
 
   /* Uzluksiz (mushaf uslubidagi) arabcha oqim matni */

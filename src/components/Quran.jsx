@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toArabicNumber } from '../lib/reading.js'
+import MushafAyah from './MushafAyah.jsx'
 import { Badge, cn } from './Ui.jsx'
 
 /* Arabcha va o'zbekcha matnda bir xil oyat birga yoritilishi uchun */
@@ -42,13 +43,26 @@ function HoverSpan({ hoverKey, className, children }) {
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className={cn(
-        'box-decoration-clone rounded-lg transition-colors duration-150',
+        'box-decoration-clone rounded-md transition-colors duration-150',
         active ? 'bg-surface-2' : 'bg-transparent',
         className,
       )}
     >
       {children}
     </span>
+  )
+}
+
+/* Har bir so'z alohida: sichqoncha ustida turgan so'z dastur rangiga o'tadi */
+function HoverWords({ text }) {
+  return text.split(/(\s+)/).map((part, index) =>
+    index % 2 === 1 || !part ? (
+      part
+    ) : (
+      <span key={index} className="hover:text-accent transition-colors duration-150">
+        {part}
+      </span>
+    ),
   )
 }
 
@@ -62,7 +76,7 @@ export function MushafText({ ayahs, surahNumber, className }) {
           hoverKey={verseKeyOf(ayah, surahNumber)}
           className="px-1.5 py-1"
         >
-          {ayah.textArabic} <AyahMarker number={ayah.numberInSurah} />{' '}
+          <HoverWords text={ayah.textArabic} /> <AyahMarker number={ayah.numberInSurah} />{' '}
         </HoverSpan>
       ))}
     </p>
@@ -77,7 +91,7 @@ export function TranslationFlow({ ayahs, surahNumber, className }) {
         <HoverSpan
           key={ayah.id}
           hoverKey={verseKeyOf(ayah, surahNumber)}
-          className="px-1.5 py-0.5"
+          className="hover:text-accent px-1.5 py-0.5"
         >
           <b className="text-ink">{ayah.numberInSurah}.</b>{' '}
           {ayah.translationUz || (
@@ -99,7 +113,7 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
       className="hover:bg-surface-2/50 scroll-mt-24 px-5 py-7 transition-colors sm:px-7"
     >
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="bg-surface-2 text-ink-soft flex h-7 min-w-7 items-center justify-center rounded-full px-2 text-[11px] font-bold">
+        <span className="bg-surface-2 text-ink-soft flex h-7 min-w-7 items-center justify-center rounded-md px-2 text-[11px] font-bold">
           {surahLink ? `${ayah.surah.number}:${ayah.numberInSurah}` : ayah.numberInSurah}
         </span>
         {surahLink ? (
@@ -118,7 +132,16 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
       </div>
 
       {showArabic ? (
-        <p className="arabic txt-arabic text-ink">{ayah.textArabic}</p>
+        <MushafAyah
+          surahNumber={ayah.surah?.number ?? ayah.surahId}
+          ayahNumber={ayah.numberInSurah}
+          pageNumber={ayah.pageNumber}
+          fallback={
+            <p className="arabic txt-arabic text-ink">
+              <HoverWords text={ayah.textArabic} />
+            </p>
+          }
+        />
       ) : null}
 
       {showTranslation && ayah.transcription ? (
@@ -127,7 +150,9 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
 
       {showTranslation ? (
         ayah.translationUz ? (
-          <p className="txt-uz text-ink-soft mt-4">{ayah.translationUz}</p>
+          <p className="txt-uz text-ink-soft hover:text-accent mt-4 transition-colors duration-150">
+            {ayah.translationUz}
+          </p>
         ) : (
           <p className="txt-uz-sub text-ink-faint mt-4 italic">
             Tarjima hali kiritilmagan
@@ -136,7 +161,7 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
       ) : null}
 
       {showTranslation && ayah.tafsirUz ? (
-        <div className="border-accent bg-surface-2 text-ink-soft txt-uz-sub mt-5 rounded-r-xl border-l-[3px] px-4 py-3">
+        <div className="border-accent bg-surface-2 text-ink-soft txt-uz-sub mt-5 rounded-r-md border-l-[3px] px-4 py-3">
           {ayah.tafsirUz}
         </div>
       ) : null}
@@ -146,7 +171,7 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
 
 function PagerButton({ action, children }) {
   const className =
-    'border-line bg-surface text-ink-soft hover:border-accent/50 hover:text-ink inline-flex cursor-pointer items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-40'
+    'border-line bg-surface text-ink-soft hover:border-accent/50 hover:text-ink inline-flex cursor-pointer items-center gap-2 rounded-md border px-3.5 py-1.5 text-[13px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-40'
 
   if (!action) return <span className="w-[130px]" />
   if (action.to) {

@@ -1,9 +1,35 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { errorMessage, surahApi } from '../api/client.js'
-import { Alert, Card, Diamond, EmptyState, Input, Skeleton } from '../components/Ui.jsx'
+import MushafExcerpt from '../components/MushafExcerpt.jsx'
+import TodayReminder from '../components/TodayReminder.jsx'
+import { Alert, Card, Diamond, EmptyState, Input, Skeleton, Tabs } from '../components/Ui.jsx'
 import { usePref } from '../lib/reading.js'
+import { useReminders } from '../lib/reminders.js'
 import { surahXatmStatus, toggleXatmSurah, useXatm } from '../lib/xatm.js'
+
+/**
+ * Sura qidiruvi ustidagi tablar. Birinchisi — tasodifiy eslatma; qolganlari doimiy
+ * oyatlar (eslatma emas): mushaf betidagi o'rni bilan, shu tabning o'zida ochiladi.
+ */
+const HOME_TABS = [
+  { id: 'reminder', label: 'Bugungi eslatma' },
+  {
+    id: 'kursi',
+    label: 'Oyatal Kursiy',
+    excerpt: { surah: 2, ayahs: [255], pageNumber: 42, caption: 'Baqara surasi, 255-oyat · 42-sahifa' },
+  },
+  {
+    id: 'omanar',
+    label: 'Aamanar-Rasulu',
+    excerpt: {
+      surah: 2,
+      ayahs: [285, 286],
+      pageNumber: 49,
+      caption: 'Baqara surasi, 285–286-oyatlar · 49-sahifa',
+    },
+  },
+]
 
 /* Surani o'qildi deb belgilash — shu suraning barcha betlari belgilanadi */
 function SurahReadToggle({ surah, status }) {
@@ -58,6 +84,8 @@ export default function SurahListPage() {
   const [query, setQuery] = useState('')
   const [order, setOrder] = usePref('surah-order', 'asc')
   const xatm = useXatm()
+  const reminders = useReminders()
+  const [tab, setTab] = useState(HOME_TABS[0].id)
 
   useEffect(() => {
     surahApi
@@ -85,6 +113,14 @@ export default function SurahListPage() {
 
   return (
     <>
+      <Tabs tabs={HOME_TABS} value={tab} onChange={setTab} className="mb-3" />
+      {tab === 'reminder' ? <TodayReminder reminders={reminders} className="mb-6" /> : null}
+      {HOME_TABS.map((item) =>
+        item.excerpt && tab === item.id ? (
+          <MushafExcerpt key={item.id} {...item.excerpt} className="mb-6" />
+        ) : null,
+      )}
+
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="relative w-full max-w-[280px]">
           <svg
@@ -99,7 +135,7 @@ export default function SurahListPage() {
             <path d="M20 20l-3.5-3.5" />
           </svg>
           <Input
-            className="rounded-full pl-10"
+            className="pl-10"
             placeholder="Sura qidirish…"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -129,7 +165,7 @@ export default function SurahListPage() {
       <Alert>{error}</Alert>
 
       {loading ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 min-[75rem]:grid-cols-3">
           {Array.from({ length: 9 }).map((_, index) => (
             <Skeleton key={index} className="h-[86px]" />
           ))}
@@ -144,7 +180,7 @@ export default function SurahListPage() {
           }
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 min-[75rem]:grid-cols-3">
           {visible.map((surah, index) => {
             const status = surahXatmStatus(xatm, surah.number)
 
@@ -188,12 +224,18 @@ export default function SurahListPage() {
                   </div>
 
                   <div className="flex-none pr-4 text-right">
-                    <p className="arabic text-ink text-lg leading-tight">
-                      {surah.nameArabic}
+                    {/* Kitobdagi sura sarlavhasi xatti (KFGQPC surah-names): "003" → «آل عمران» */}
+                    <p
+                      dir="ltr"
+                      className="text-ink text-[28px] leading-[22.5px]"
+                      style={{ fontFamily: '"surah-names"' }}
+                      title={surah.nameArabic}
+                      aria-label={surah.nameArabic}
+                    >
+                      {String(surah.number).padStart(3, '0')}
                     </p>
                     <p className="text-ink-faint mt-1 text-[13px]">
-                      {surah.savedAyahs}
-                      {surah.totalAyahs ? `/${surah.totalAyahs}` : ''} oyat
+                      {surah.totalAyahs || surah.savedAyahs} oyat
                     </p>
                   </div>
                 </Card>

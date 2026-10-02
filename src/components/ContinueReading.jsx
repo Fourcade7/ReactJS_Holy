@@ -13,7 +13,7 @@ export default function ContinueReading() {
     <Link
       to={lastRead.path}
       title="Oxirgi oʻqilgan joydan davom etish"
-      className="border-line bg-surface-2 text-ink-soft hover:border-accent/50 hover:text-ink flex items-center gap-2 rounded-xl border px-3 py-1.5 text-[13px] font-semibold transition-colors"
+      className="border-line bg-surface-2 text-ink-soft hover:border-accent/50 hover:text-ink flex items-center gap-2 h-8 rounded-md border px-2.5 text-xs font-semibold transition-colors"
     >
       <svg
         viewBox="0 0 24 24"

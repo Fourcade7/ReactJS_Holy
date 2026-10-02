@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { PageHeader, cn } from '../components/Ui.jsx'
+import { useSearchParams } from 'react-router-dom'
+import { PageHeader, Tabs } from '../components/Ui.jsx'
 import DataSourceSettings from './settings/DataSourceSettings.jsx'
+import ReminderSettings from './settings/ReminderSettings.jsx'
 import TextSettings from './settings/TextSettings.jsx'
 import XatmSettings from './settings/XatmSettings.jsx'
 
@@ -20,35 +22,32 @@ const TABS = [
     label: 'Xatm',
     hint: 'Oʻqilgan sahifalar belgilari — shu brauzerda saqlanadi.',
   },
+  {
+    id: 'reminders',
+    label: 'Eslatmalar',
+    hint: 'Bosh sahifadagi «Bugungi eslatma» uchun oʻzingiz tanlagan oyat va hikmatlar.',
+  },
 ]
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState('text')
+  const [params] = useSearchParams()
+  /* ?tab=reminders kabi havola bilan kerakli tab ochiladi */
+  const [tab, setTab] = useState(() =>
+    TABS.some((item) => item.id === params.get('tab')) ? params.get('tab') : 'text',
+  )
   const active = TABS.find((item) => item.id === tab) ?? TABS[0]
 
   return (
     <>
       <PageHeader title="Sozlamalar" subtitle={active.hint} />
 
-      <div className="bg-surface-2 border-line mb-6 inline-flex rounded-full border p-1">
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setTab(item.id)}
-            className={cn(
-              'cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-all duration-150',
-              tab === item.id ? 'bg-ink text-bg' : 'text-ink-soft hover:text-ink',
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={TABS} value={tab} onChange={setTab} className="mb-6" />
 
       <div className="animate-fade">
         {tab === 'text' ? <TextSettings /> : null}
         {tab === 'data' ? <DataSourceSettings /> : null}
         {tab === 'xatm' ? <XatmSettings /> : null}
+        {tab === 'reminders' ? <ReminderSettings /> : null}
       </div>
     </>
   )

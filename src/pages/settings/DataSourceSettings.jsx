@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react'
-import { dataApi } from '../../api/client.js'
-import { Badge, Card, SectionTitle, cn } from '../../components/Ui.jsx'
+import { dataApi, errorMessage } from '../../api/client.js'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Progress,
+  SectionTitle,
+  cn,
+} from '../../components/Ui.jsx'
+import { saveBlob, zipBlob, zipEntry } from '../../lib/zip.js'
 
-const ZIP_PATH = '/data.zip'
+const ARCHIVE_NAME = 'quron-data.zip'
+const PARALLEL = 12
 
 function formatSize(bytes) {
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
@@ -10,18 +20,26 @@ function formatSize(bytes) {
 }
 
 /**
- * Arxiv bor-yo'qligini va hajmini HEAD so'rovi bilan bilib olamiz.
- * Fayl yo'q bo'lsa dev server index.html qaytaradi — shuning uchun turini tekshiramiz.
+ * public/data ichidagi barcha JSON fayllarni bitta .zip ga yig'adi.
+ * Ro'yxat manifest.json dan olinadi — arxiv doim haqiqiy fayllar bilan bir xil bo'ladi.
  */
-async function fetchZipSize() {
-  try {
-    const response = await fetch(ZIP_PATH, { method: 'HEAD' })
-    const type = response.headers.get('content-type') ?? ''
-    if (!response.ok || type.includes('text/html')) return null
-    return Number(response.headers.get('content-length')) || null
-  } catch {
-    return null
+async function buildDataArchive(onProgress) {
+  const manifest = await dataApi.manifest()
+  const paths = [...new Set(['manifest.json', ...manifest.files.map((file) => file.path)])]
+  const entries = new Array(paths.length)
+  let next = 0
+  let done = 0
+
+  async function worker() {
+    while (next < paths.length) {
+      const index = next++
+      entries[index] = await zipEntry(`data/${paths[index]}`, await dataApi.bytes(paths[index]))
+      onProgress(++done, paths.length)
+    }
   }
+
+  await Promise.all(Array.from({ length: PARALLEL }, worker))
+  return zipBlob(entries)
 }
 
 function Stat({ label, value, strong = false }) {
@@ -35,13 +53,77 @@ function Stat({ label, value, strong = false }) {
   )
 }
 
+function DownloadArchive({ totalBytes }) {
+  const [progress, setProgress] = useState(null)
+  const [error, setError] = useState('')
+  const percent = progress?.total ? Math.round((progress.done / progress.total) * 100) : 0
+
+  async function download() {
+    setError('')
+    setProgress({ done: 0, total: 0 })
+    try {
+      const blob = await buildDataArchive((done, total) => setProgress({ done, total }))
+      saveBlob(blob, ARCHIVE_NAME)
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setProgress(null)
+    }
+  }
+
+  return (
+    <div className="mt-5">
+      <div className="border-line bg-surface-2 rounded-md border px-4 py-3">
+        <div className="flex items-center gap-3">
+          <svg
+            viewBox="0 0 24 24"
+            className="text-accent h-5 w-5 flex-none"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+          </svg>
+          <span className="min-w-0 flex-1">
+            <span className="text-ink block text-sm font-semibold">
+              Barcha JSON maʼlumotni yuklab olish
+            </span>
+            <span className="text-ink-faint block text-xs tabular-nums">
+              {progress
+                ? `Arxiv tayyorlanmoqda… ${progress.done.toLocaleString('uz')} / ${progress.total.toLocaleString('uz')}`
+                : `${ARCHIVE_NAME}${totalBytes ? ` · ${formatSize(totalBytes)} JSON` : ''}`}
+            </span>
+          </span>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={download}
+            disabled={Boolean(progress)}
+            className="tabular-nums"
+          >
+            {progress ? `${percent}%` : 'Yuklab olish'}
+          </Button>
+        </div>
+        {progress ? (
+          <Progress value={progress.done} total={progress.total} className="mt-3" />
+        ) : null}
+      </div>
+      {error ? (
+        <div className="mt-3">
+          <Alert>{error}</Alert>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export default function DataSourceSettings() {
   const [meta, setMeta] = useState(null)
-  const [zipSize, setZipSize] = useState(null)
 
   useEffect(() => {
     dataApi.meta().then(setMeta)
-    fetchZipSize().then(setZipSize)
   }, [])
 
   return (
@@ -80,38 +162,11 @@ export default function DataSourceSettings() {
           </dl>
         ) : null}
 
-        {zipSize ? (
-          <a
-            href={ZIP_PATH}
-            download="data.zip"
-            className="border-line bg-surface-2 text-ink hover:border-accent/50 mt-5 flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="text-accent h-5 w-5 flex-none"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
-            </svg>
-            <span className="flex-1">
-              <span className="block text-sm font-semibold">data.zip yuklab olish</span>
-              <span className="text-ink-faint block text-xs">
-                public papkasidagi tayyor arxiv
-              </span>
-            </span>
-            <span className="text-ink-soft text-[13px] font-semibold">
-              {formatSize(zipSize)}
-            </span>
-          </a>
-        ) : null}
+        {meta ? <DownloadArchive totalBytes={meta.totalBytes} /> : null}
 
         <p className="text-ink-faint mt-5 text-[13px] leading-relaxed">
           Barcha maʼlumot{' '}
-          <code className="bg-surface-2 rounded px-1.5 py-0.5 text-xs">public/data</code>{' '}
+          <code className="bg-surface-2 rounded-md px-1.5 py-0.5 text-xs">public/data</code>{' '}
           papkasidagi JSON fayllardan oʻqiladi, server kerak emas. Qurʼon matni oʻzgarmagani
           uchun fayllarni qayta yozish shart emas.
         </p>

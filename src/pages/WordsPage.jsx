@@ -101,7 +101,7 @@ export default function WordsPage() {
             <path d="M20 20l-3.5-3.5" />
           </svg>
           <Input
-            className="rounded-full pl-10"
+            className="pl-10"
             placeholder="Soʻz qidirish…"
             value={query}
             onChange={(event) => setQuery(event.target.value)}

@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 /* Xatm: qaysi bet qachon o'qildi deb belgilangan — { "293": 1758300000000, … } */
 const KEY = 'xatm-read-pages'
 const EVENT = 'xatm-change'
+/* Xatm boshlangan vaqt — birinchi bet belgilanganda yoziladi, tozalanganda o'chadi */
+const START_KEY = 'xatm-started-at'
 
 export const TOTAL_PAGES = 604
 
@@ -64,8 +66,45 @@ export function readXatm() {
   }
 }
 
+function readStartedAt() {
+  try {
+    const value = Number(localStorage.getItem(START_KEY))
+    return value > 0 ? value : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Xatm qachon boshlangan: saqlangan vaqt, u bo'lmasa (eski belgilar uchun) eng birinchi belgi.
+ * Belgi yo'q bo'lsa — null.
+ */
+export function xatmStartedAt(xatm) {
+  const times = Object.values(xatm)
+  if (times.length === 0) return null
+  return readStartedAt() ?? Math.min(...times)
+}
+
+/** Oxirgi belgilangan bet: [betRaqami, vaqt]. Bir vaqtda belgilanganlardan eng kattasi. */
+export function lastXatmMark(xatm) {
+  return Object.entries(xatm).reduce(
+    (best, entry) =>
+      !best || entry[1] > best[1] || (entry[1] === best[1] && Number(entry[0]) > Number(best[0]))
+        ? entry
+        : best,
+    null,
+  )
+}
+
 function writeXatm(value) {
   try {
+    if (Object.keys(value).length === 0) {
+      localStorage.removeItem(START_KEY)
+    } else if (!readStartedAt()) {
+      /* birinchi belgi (yoki boshlanish vaqti hali yozilmagan eski belgilar) */
+      const times = [...Object.values(readXatm()), ...Object.values(value)]
+      localStorage.setItem(START_KEY, String(Math.min(...times)))
+    }
     localStorage.setItem(KEY, JSON.stringify(value))
   } catch {
     /* private rejim — eslab qolmasdan davom etamiz */
@@ -97,6 +136,7 @@ export function setXatmRange(from, to, read, { keepExisting = false } = {}) {
 export function resetXatm() {
   try {
     localStorage.removeItem(KEY)
+    localStorage.removeItem(START_KEY)
   } catch {
     /* e'tiborsiz qoldiramiz */
   }

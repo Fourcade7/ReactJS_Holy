@@ -22,7 +22,7 @@ function ScaleControl({ title, hint, value, onChange, children }) {
         </div>
         <span
           className={cn(
-            'rounded-full px-3 py-1 text-sm font-bold',
+            'rounded-md px-3 py-1 text-sm font-bold',
             value === DEFAULT_SCALE
               ? 'bg-surface-2 text-ink-soft'
               : 'bg-accent/12 text-accent',
@@ -63,7 +63,7 @@ function ScaleControl({ title, hint, value, onChange, children }) {
         </Button>
       </div>
 
-      <div className="bg-surface-2 mt-5 rounded-xl px-5 py-4">{children}</div>
+      <div className="bg-surface-2 mt-5 rounded-md px-5 py-4">{children}</div>
     </Card>
   )
 }

@@ -155,7 +155,7 @@ export default function SurahReadPage() {
 
       <Card className="mb-6 p-5 sm:p-6">
         <div className="flex items-start gap-4">
-          <div className="bg-surface-2 hidden h-16 w-16 flex-none items-center justify-center rounded-xl sm:flex">
+          <div className="bg-surface-2 hidden h-16 w-16 flex-none items-center justify-center rounded-md sm:flex">
             <span className="arabic text-accent text-2xl leading-none">
               {surah.nameArabic}
             </span>

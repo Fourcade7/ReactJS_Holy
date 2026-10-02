@@ -1,22 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { mushafApi, surahApi } from '../api/client.js'
+import { usePageFont } from '../lib/mushaf.js'
 import { useAyahHoverByKey } from './Quran.jsx'
 import { cn } from './Ui.jsx'
 
-const loadedFonts = new Set()
 const BASE_FONT = 28
-
-/** Har bir mushaf sahifasining o'z KFGQPC shrifti bor: p1, p2, … p604 */
-function usePageFont(pageNumber) {
-  useEffect(() => {
-    if (!pageNumber || loadedFonts.has(pageNumber)) return
-    const style = document.createElement('style')
-    style.dataset.mushafPage = String(pageNumber)
-    style.textContent = `@font-face{font-family:"mushaf-p${pageNumber}";src:url("/fonts/hafs/v1/p${pageNumber}.woff2") format("woff2");font-display:block}`
-    document.head.appendChild(style)
-    loadedFonts.add(pageNumber)
-  }, [pageNumber])
-}
 
 /* 1- va 2-sahifalar bosma mushafda ham markazga tekislangan */
 const CENTERED_PAGES = new Set([1, 2])
@@ -218,7 +206,7 @@ function Basmala() {
   )
 }
 
-function MushafWord({ word, pageNumber }) {
+function MushafWord({ word, pageNumber, hidden = false }) {
   const verseKey = `${word.surahNumber}:${word.ayahNumber}`
   const { active, onMouseEnter, onMouseLeave } = useAyahHoverByKey(verseKey)
 
@@ -227,9 +215,10 @@ function MushafWord({ word, pageNumber }) {
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className={cn(
-        'rounded transition-colors duration-150',
+        'hover:text-accent rounded-md transition-colors duration-150',
         active ? 'bg-surface-2' : 'bg-transparent',
         word.charType === 'end' ? 'text-accent' : '',
+        hidden ? 'invisible' : '',
       )}
       style={{ fontFamily: `"mushaf-p${pageNumber}"` }}
     >
@@ -238,7 +227,11 @@ function MushafWord({ word, pageNumber }) {
   )
 }
 
-export default function MushafPage({ pageNumber, fallback = null }) {
+/**
+ * `verses` berilsa (["2:255"]), betdan faqat shu oyatlar turgan satrlar chiqadi:
+ * qo'shni oyat so'zlari yashiriladi, lekin joyi saqlanadi — oyat kitobdagi o'rnida turadi.
+ */
+export default function MushafPage({ pageNumber, fallback = null, verses = null }) {
   const [page, setPage] = useState(null)
   const [status, setStatus] = useState('loading')
   const [fontSize, setFontSize] = useState(BASE_FONT)
@@ -249,7 +242,16 @@ export default function MushafPage({ pageNumber, fallback = null }) {
   const surahs = useSurahNames()
 
   const centered = useMemo(() => CENTERED_PAGES.has(Number(pageNumber)), [pageNumber])
-  const rows = useMemo(() => (page ? buildRows(page.lines, centered) : []), [page, centered])
+  const only = useMemo(() => (verses ? new Set(verses) : null), [verses])
+  const rows = useMemo(() => {
+    const all = page ? buildRows(page.lines, centered) : []
+    if (!only) return all
+    return all.filter(
+      (row) =>
+        row.type === 'line' &&
+        row.line.words.some((word) => only.has(`${word.surahNumber}:${word.ayahNumber}`)),
+    )
+  }, [page, centered, only])
 
   useEffect(() => {
     let cancelled = false
@@ -328,7 +330,7 @@ export default function MushafPage({ pageNumber, fallback = null }) {
     return (
       <div className="space-y-4 py-4">
         {Array.from({ length: 8 }).map((_, index) => (
-          <div key={index} className="bg-surface-2 h-7 animate-pulse rounded" />
+          <div key={index} className="bg-surface-2 h-7 animate-pulse rounded-md" />
         ))}
       </div>
     )
@@ -398,6 +400,7 @@ export default function MushafPage({ pageNumber, fallback = null }) {
                   key={`${line.lineNumber}-${index}`}
                   word={word}
                   pageNumber={pageNumber}
+                  hidden={only ? !only.has(`${word.surahNumber}:${word.ayahNumber}`) : false}
                 />
               ))}
             </div>

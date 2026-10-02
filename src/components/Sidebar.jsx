@@ -91,7 +91,7 @@ export default function Sidebar({ onNavigate }) {
                   onClick={onNavigate}
                   aria-current={isActive ? 'page' : undefined}
                   className={cn(
-                    'relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors',
+                    'relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors',
                     isActive
                       ? 'bg-surface-2 text-ink'
                       : 'text-ink-soft hover:bg-surface-2/50 hover:text-ink',

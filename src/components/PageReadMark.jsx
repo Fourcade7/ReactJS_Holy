@@ -11,7 +11,7 @@ export default function PageReadMark({ pageNumber }) {
         type="button"
         onClick={() => toggleXatmPage(pageNumber)}
         aria-pressed={Boolean(readAt)}
-        className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+        className={`inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-[13px] font-semibold transition-colors ${
           readAt
             ? 'border-emerald-500/70 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/15'
             : 'border-line bg-surface-2 text-ink-soft hover:text-ink hover:border-emerald-500/60'

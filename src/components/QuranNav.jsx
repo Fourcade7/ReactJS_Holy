@@ -110,7 +110,7 @@ export default function QuranNav() {
     <div className="relative" ref={panelRef}>
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="text-ink hover:bg-surface-2 flex cursor-pointer items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-bold transition-colors"
+        className="text-ink hover:bg-surface-2 flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 text-sm font-bold transition-colors"
       >
         {currentLabel}
         <svg
@@ -127,15 +127,15 @@ export default function QuranNav() {
       </button>
 
       {open ? (
-        <div className="bg-surface border-line animate-rise absolute top-full left-0 z-50 mt-2 w-[min(92vw,460px)] rounded-2xl border p-4 shadow-2xl">
+        <div className="bg-surface border-line animate-rise absolute top-full left-0 z-50 mt-2 w-[min(92vw,460px)] rounded-md border p-4 shadow-2xl">
           <div className="flex items-center gap-2">
-            <div className="bg-surface-2 border-line flex flex-1 items-center gap-1 rounded-full border p-1">
+            <div className="bg-surface-2 border-line flex flex-1 items-center gap-0.5 rounded-md border p-0.5">
               {TABS.map((item) => (
                 <button
                   key={item.value}
                   onClick={() => switchTab(item.value)}
                   className={cn(
-                    'flex-1 cursor-pointer rounded-full px-3 py-1.5 text-[13px] font-semibold transition-colors',
+                    'flex-1 cursor-pointer rounded-md px-2.5 py-1 text-xs font-semibold transition-colors',
                     tab === item.value
                       ? 'bg-ink text-bg'
                       : 'text-ink-soft hover:text-ink',
@@ -148,7 +148,7 @@ export default function QuranNav() {
             <button
               onClick={() => setOpen(false)}
               aria-label="Yopish"
-              className="text-ink-faint hover:text-ink flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors"
+              className="text-ink-faint hover:text-ink flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors"
             >
               ✕
             </button>
@@ -172,7 +172,7 @@ export default function QuranNav() {
                   ? 'Sahifa qidirish…'
                   : 'Sura qidirish…'
             }
-            className="bg-surface-2 border-line text-ink placeholder:text-ink-faint focus:border-accent mt-3 w-full rounded-xl border px-3.5 py-2.5 text-sm focus:outline-none"
+            className="bg-surface-2 border-line text-ink placeholder:text-ink-faint focus:border-accent mt-3 w-full rounded-md border px-3.5 py-2.5 text-sm focus:outline-none"
           />
 
           {tab === 'verse' ? (
@@ -183,7 +183,7 @@ export default function QuranNav() {
                     key={surah.id}
                     onClick={() => setPickedSurah(surah)}
                     className={cn(
-                      'flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors',
+                      'flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors',
                       pickedSurah?.id === surah.id
                         ? 'bg-surface-2 text-ink font-bold'
                         : 'text-ink-soft hover:bg-surface-2/60 hover:text-ink',
@@ -204,7 +204,7 @@ export default function QuranNav() {
                       <button
                         key={verse}
                         onClick={() => go(`/surah/${pickedSurah.number}#ayah-${verse}`)}
-                        className="text-ink-soft hover:bg-surface-2/60 hover:text-ink w-full cursor-pointer rounded-lg px-3 py-2 text-left text-sm transition-colors"
+                        className="text-ink-soft hover:bg-surface-2/60 hover:text-ink w-full cursor-pointer rounded-md px-3 py-2 text-left text-sm transition-colors"
                       >
                         {verse}
                       </button>
@@ -226,7 +226,7 @@ export default function QuranNav() {
                     <button
                       key={surah.id}
                       onClick={() => go(`/surah/${surah.number}`)}
-                      className="text-ink-soft hover:bg-surface-2/60 hover:text-ink flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors"
+                      className="text-ink-soft hover:bg-surface-2/60 hover:text-ink flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors"
                     >
                       <span className="text-ink-faint w-5 flex-none text-[13px]">
                         {surah.number}
@@ -241,7 +241,7 @@ export default function QuranNav() {
                     <button
                       key={item}
                       onClick={() => go(tab === 'juz' ? `/juz/${item}` : `/page/${item}`)}
-                      className="text-ink-soft hover:bg-surface-2/60 hover:text-ink w-full cursor-pointer rounded-lg px-3 py-2 text-left text-sm transition-colors"
+                      className="text-ink-soft hover:bg-surface-2/60 hover:text-ink w-full cursor-pointer rounded-md px-3 py-2 text-left text-sm transition-colors"
                     >
                       {tab === 'juz' ? `${item}-juz` : `${item}-sahifa`}
                     </button>
