@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { readingWidth } from '../lib/display.js'
+import { useReadingTracker } from '../lib/readingTime.js'
 import ContinueReading from './ContinueReading.jsx'
 import QuranNav from './QuranNav.jsx'
+import ReadingTimeBadge from './ReadingTimeBadge.jsx'
 import Sidebar from './Sidebar.jsx'
 import ThemeSwitch from './ThemeSwitch.jsx'
 import { cn } from './Ui.jsx'
@@ -14,6 +16,8 @@ export default function Layout() {
   const isReading = /^\/(surah|page|juz)\/\d+/.test(location.pathname)
   /* Ro'yxatlar kengroq: Sahifalar keng ekranda 10 ustun, bosh sahifada sura nomlari to'liq sig'ishi uchun */
   const listWidth = { '/pages': '80rem', '/': '72rem' }[location.pathname]
+  /* O'qish vaqti faqat sura / sahifa / juz o'qish sahifalarida hisoblanadi */
+  useReadingTracker(isReading)
 
   useEffect(() => {
     setDrawerOpen(false)
@@ -59,6 +63,7 @@ export default function Layout() {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <ReadingTimeBadge />
             <XatmProgress />
             <ContinueReading />
             <ThemeSwitch />

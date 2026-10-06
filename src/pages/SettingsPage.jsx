@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { PageHeader, Tabs } from '../components/Ui.jsx'
 import DataSourceSettings from './settings/DataSourceSettings.jsx'
+import ReadingTimeSettings from './settings/ReadingTimeSettings.jsx'
 import ReminderSettings from './settings/ReminderSettings.jsx'
 import TextSettings from './settings/TextSettings.jsx'
 import XatmSettings from './settings/XatmSettings.jsx'
@@ -23,6 +24,11 @@ const TABS = [
     hint: 'Oʻqilgan sahifalar belgilari — shu brauzerda saqlanadi.',
   },
   {
+    id: 'reading',
+    label: 'Oʻqish vaqti',
+    hint: 'Sura, sahifa va juz oʻqish sahifalarida oʻtkazilgan vaqt — kunlar boʻyicha.',
+  },
+  {
     id: 'reminders',
     label: 'Eslatmalar',
     hint: 'Bosh sahifadagi «Bugungi eslatma» uchun oʻzingiz tanlagan oyat va hikmatlar.',
@@ -36,6 +42,12 @@ export default function SettingsPage() {
     TABS.some((item) => item.id === params.get('tab')) ? params.get('tab') : 'text',
   )
   const active = TABS.find((item) => item.id === tab) ?? TABS[0]
+  /* Sozlamalar ochiq turganda navbardagi havola bosilsa ham kerakli tab ochilsin */
+  const { key: locationKey } = useLocation()
+  useEffect(() => {
+    const requested = params.get('tab')
+    if (TABS.some((item) => item.id === requested)) setTab(requested)
+  }, [locationKey, params])
 
   return (
     <>
@@ -47,6 +59,7 @@ export default function SettingsPage() {
         {tab === 'text' ? <TextSettings /> : null}
         {tab === 'data' ? <DataSourceSettings /> : null}
         {tab === 'xatm' ? <XatmSettings /> : null}
+        {tab === 'reading' ? <ReadingTimeSettings /> : null}
         {tab === 'reminders' ? <ReminderSettings /> : null}
       </div>
     </>

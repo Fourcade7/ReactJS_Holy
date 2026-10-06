@@ -69,12 +69,14 @@ function writeReminders(list) {
   window.dispatchEvent(new CustomEvent(EVENT, { detail: list }))
 }
 
-export function addReminder({ type, title, text }) {
+/* `source` — oyat tarjimasidan saqlanganda qaysi oyatligi ("112:1"), qayta saqlanmasligi uchun */
+export function addReminder({ type, title, text, source }) {
   const reminder = {
     id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
     type,
     title: title.trim(),
     text: text.trim(),
+    ...(source ? { source } : {}),
     createdAt: Date.now(),
   }
   writeReminders([reminder, ...readReminders()])

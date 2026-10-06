@@ -174,7 +174,7 @@ export default function JuzReadPage() {
         ) : null}
       </div>
 
-      {!loading && ayahs.length > 0 ? <ReaderPager {...pager} /> : null}
+      {!loading && ayahs.length > 0 ? <ReaderPager {...pager} keyboard={viewMode === 'page'} /> : null}
     </>
   )
 }

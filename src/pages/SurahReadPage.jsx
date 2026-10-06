@@ -277,7 +277,7 @@ export default function SurahReadPage() {
         ) : null}
       </div>
 
-      {surah.ayahs.length > 0 ? <ReaderPager {...pager} /> : null}
+      {surah.ayahs.length > 0 ? <ReaderPager {...pager} keyboard={viewMode === 'page'} /> : null}
     </>
   )
 }

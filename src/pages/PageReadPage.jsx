@@ -165,6 +165,7 @@ export default function PageReadPage() {
       ) : null}
 
       <ReaderPager
+        keyboard
         label={`${current} / 604`}
         prev={current > 1 ? { label: 'Oldingi sahifa', to: `/page/${current - 1}` } : null}
         next={

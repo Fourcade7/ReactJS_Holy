@@ -111,11 +111,11 @@ export default function XatmProgress() {
       </span>
 
       {/* Chiziq uzunligi oyna kengligiga qarab (kunlar bloki uchun ham joy qoldiriladi):
-          1264px oynada 124px, ~1500px dan keng ekranda 352px; 1190px dan tor oynada
-          navbarga sig'maydi — u yerda son, doira va kunlar yetarli */}
+          1366px oynada 136px, ~1580px dan keng ekranda 352px; 1275px dan tor oynada
+          navbarga sig'maydi (chapda «bugun o'qildi» ham bor) — u yerda son, doira va kunlar yetarli */}
       <span
-        className="relative mt-3 hidden flex-none min-[1190px]:block"
-        style={{ width: 'clamp(48px, calc(100vw - 1140px), 352px)' }}
+        className="relative mt-3 hidden flex-none min-[1275px]:block"
+        style={{ width: 'clamp(48px, calc(100vw - 1230px), 352px)' }}
       >
         {/* Foiz — yashil chiziq tugagan joyning tepasida, chetdan chiqib ketmaydi */}
         <span
@@ -136,7 +136,7 @@ export default function XatmProgress() {
 
       {/* Xatm boshlanganidan beri o'tgan kunlar, ostida oy / hafta / kun ko'rinishida */}
       {elapsed ? (
-        <span className="hidden flex-col gap-0.5 leading-tight whitespace-nowrap tabular-nums min-[1100px]:flex">
+        <span className="hidden flex-col gap-0.5 leading-tight whitespace-nowrap tabular-nums min-[1215px]:flex">
           <span className="text-ink text-[13px] font-bold">
             {elapsed.totalDays ? `${elapsed.totalDays} kun` : 'Bugun'}
           </span>
@@ -148,8 +148,8 @@ export default function XatmProgress() {
 
       {startedAt ? (
         <>
-          <span className="bg-line hidden h-8 w-px min-[1760px]:block" />
-          <span className="text-ink-faint hidden flex-col gap-1 text-[11px] leading-tight whitespace-nowrap tabular-nums min-[1760px]:flex">
+          <span className="bg-line hidden h-8 w-px min-[1840px]:block" />
+          <span className="text-ink-faint hidden flex-col gap-1 text-[11px] leading-tight whitespace-nowrap tabular-nums min-[1840px]:flex">
             <span>
               Boshlangan vaqti:{' '}
               <span className="text-ink font-semibold">{formatReadAt(startedAt)}</span>
@@ -166,7 +166,7 @@ export default function XatmProgress() {
       ) : null}
 
       {/* To'liq ma'lumot — sanalar ko'rinmaydigan ekranlarda, sichqoncha ustiga kelganda */}
-      <span className="bg-surface border-line text-ink-soft pointer-events-none absolute top-full right-0 z-50 mt-1 hidden w-max rounded-md border px-3.5 py-3 text-left text-xs font-medium shadow-2xl group-hover:block min-[1760px]:group-hover:hidden">
+      <span className="bg-surface border-line text-ink-soft pointer-events-none absolute top-full right-0 z-50 mt-1 hidden w-max rounded-md border px-3.5 py-3 text-left text-xs font-medium shadow-2xl group-hover:block min-[1840px]:group-hover:hidden">
         <span className="text-ink block text-[13px] font-bold">Xatm holati</span>
         <span className="mt-1.5 block tabular-nums">
           <span className="font-bold text-emerald-500">{readCount}</span> / {TOTAL_PAGES} sahifa

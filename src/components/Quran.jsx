@@ -1,6 +1,7 @@
-import { createContext, useContext, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { toArabicNumber } from '../lib/reading.js'
+import AyahReminderButton from './AyahReminderButton.jsx'
 import MushafAyah from './MushafAyah.jsx'
 import { Badge, cn } from './Ui.jsx'
 
@@ -83,7 +84,7 @@ export function MushafText({ ayahs, surahNumber, className }) {
   )
 }
 
-/* Sahifa tarjimasi: raqamlar matn ichida qalin holda */
+/* Sahifa tarjimasi: raqamlar matn ichida qalin holda; raqam chapida (hover'da) — eslatmaga saqlash */
 export function TranslationFlow({ ayahs, surahNumber, className }) {
   return (
     <p className={cn('txt-uz text-ink-soft leading-[2]', className)}>
@@ -91,9 +92,19 @@ export function TranslationFlow({ ayahs, surahNumber, className }) {
         <HoverSpan
           key={ayah.id}
           hoverKey={verseKeyOf(ayah, surahNumber)}
-          className="hover:text-accent px-1.5 py-0.5"
+          className="group/ayah hover:text-accent px-1.5 py-0.5"
         >
-          <b className="text-ink">{ayah.numberInSurah}.</b>{' '}
+          <span className="relative">
+            {ayah.translationUz ? (
+              <AyahReminderButton
+                surahNumber={ayah.surah?.number ?? surahNumber ?? ayah.surahId}
+                ayahNumber={ayah.numberInSurah}
+                text={ayah.translationUz}
+                className="top-1/2 -translate-y-1/2"
+              />
+            ) : null}
+            <b className="text-ink">{ayah.numberInSurah}.</b>
+          </span>{' '}
           {ayah.translationUz || (
             <span className="text-ink-faint italic">tarjima kiritilmagan</span>
           )}{' '}
@@ -110,7 +121,7 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
   return (
     <article
       id={`ayah-${ayah.numberInSurah}`}
-      className="hover:bg-surface-2/50 scroll-mt-24 px-5 py-7 transition-colors sm:px-7"
+      className="group/ayah hover:bg-surface-2/50 scroll-mt-24 px-5 py-7 transition-colors sm:px-7"
     >
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <span className="bg-surface-2 text-ink-soft flex h-7 min-w-7 items-center justify-center rounded-md px-2 text-[11px] font-bold">
@@ -151,7 +162,15 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
 
       {showTranslation ? (
         ayah.translationUz ? (
-          <p className="txt-uz text-ink-soft hover:text-accent mt-4 transition-colors duration-150">
+          <p className="txt-uz text-ink-soft hover:text-accent relative mt-4 transition-colors duration-150">
+            {/* oyat ustiga kelganda tarjimaning birinchi satri chapida (matnni surmaydi) */}
+            <AyahReminderButton
+              surahNumber={ayah.surah?.number ?? ayah.surahId}
+              ayahNumber={ayah.numberInSurah}
+              text={ayah.translationUz}
+              className="mr-0.5"
+              style={{ top: 'calc(0.5lh - 8px)' }}
+            />
             {ayah.translationUz}
           </p>
         ) : (
@@ -189,8 +208,37 @@ function PagerButton({ action, children }) {
   )
 }
 
-/* O'qish rejimiga mos «oldingi / keyingi» navigatsiyasi */
-export function ReaderPager({ prev, next, label }) {
+/* Matn yozilayotgan joyda strelkalar o'z vazifasini bajarsin */
+function isTypingTarget(target) {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable || Boolean(target.closest('input, textarea, select')))
+  )
+}
+
+/**
+ * O'qish rejimiga mos «oldingi / keyingi» navigatsiyasi.
+ * `keyboard` berilsa (sahifa rejimi), ← oldingi, → keyingi tugmani bosadi — xuddi ekrandagidek.
+ */
+export function ReaderPager({ prev, next, label, keyboard = false }) {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!keyboard) return
+    function onKeyDown(event) {
+      if (event.repeat || event.defaultPrevented) return
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+      if (isTypingTarget(event.target)) return
+      const action = event.key === 'ArrowLeft' ? prev : event.key === 'ArrowRight' ? next : null
+      if (!action) return
+      event.preventDefault()
+      if (action.onClick) action.onClick()
+      else if (action.to) navigate(action.to)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [keyboard, prev, next, navigate])
+
   return (
     <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
       <PagerButton action={prev}>
