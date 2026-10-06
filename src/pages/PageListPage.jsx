@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { errorMessage, pageApi, surahApi } from '../api/client.js'
 import { usePref } from '../lib/reading.js'
-import { formatReadAt, toggleXatmPage, useXatm } from '../lib/xatm.js'
+import { formatReadAt, lastXatmMark, toggleXatmPage, useXatm } from '../lib/xatm.js'
 import {
   Alert,
   Button,
@@ -37,8 +37,28 @@ function SurahLabel({ info }) {
   )
 }
 
+/* Bir kunda belgilangan betlar bir xil rangda: kunlar xronologik tartibda navbatdagi rangni oladi
+   (birinchi kun — avvalgidek yashil), 10 kundan keyin ranglar qaytadan boshlanadi */
+const DAY_COLORS = [
+  '#10b981', // yashil
+  '#0ea5e9', // ko'k
+  '#8b5cf6', // binafsha
+  '#f59e0b', // sariq
+  '#f43f5e', // qizil
+  '#6366f1', // indigo
+  '#f97316', // to'q sariq
+  '#84cc16', // och yashil
+  '#d946ef', // pushti-binafsha
+  '#ec4899', // pushti
+]
+
+function dayKey(timestamp) {
+  const date = new Date(timestamp)
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+}
+
 /* Kartochka ichidagi «o'qildi» belgisi — Link ichida bo'lgani uchun o'tishni to'xtatamiz */
-function ReadToggle({ pageNumber, readAt }) {
+function ReadToggle({ pageNumber, readAt, color }) {
   const done = Boolean(readAt)
 
   return (
@@ -51,9 +71,10 @@ function ReadToggle({ pageNumber, readAt }) {
       }}
       className={`absolute top-1.5 left-1.5 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border transition-colors ${
         done
-          ? 'border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600'
+          ? 'text-white hover:brightness-90'
           : 'border-line text-transparent hover:border-emerald-500/70 hover:text-emerald-500/70'
       }`}
+      style={done ? { borderColor: color, backgroundColor: color } : undefined}
       title={done ? "Belgini olib tashlash" : "O'qildi deb belgilash"}
       aria-label={done ? `${pageNumber}-sahifa belgisini olib tashlash` : `${pageNumber}-sahifani o'qildi deb belgilash`}
       aria-pressed={done}
@@ -80,6 +101,11 @@ export default function PageListPage() {
   const [jump, setJump] = useState('')
   const navigate = useNavigate()
   const xatm = useXatm()
+  /* Har bir belgilash kuni → rang (eng eski kun birinchi rangni oladi) */
+  const dayColors = useMemo(() => {
+    const days = [...new Set(Object.values(xatm).sort((a, b) => a - b).map(dayKey))]
+    return new Map(days.map((day, index) => [day, DAY_COLORS[index % DAY_COLORS.length]]))
+  }, [xatm])
   const [order, setOrder] = usePref('page-order', 'asc')
 
   useEffect(() => {
@@ -89,6 +115,24 @@ export default function PageListPage() {
       .catch((err) => setError(errorMessage(err)))
       .finally(() => setLoading(false))
   }, [])
+
+  /* Bo'limga kirganda oxirgi belgilangan bet ekran o'rtasiga keladi — faqat bir marta,
+     shunda bet ichida belgi qo'yib/olganda sahifa sakramaydi.
+     Kartochka faqat ro'yxat ichidan qidiriladi: navbardagi «Davom etish» ham shu betga
+     olib borishi mumkin (/page/N) */
+  const gridRef = useRef(null)
+  const scrolledToLastRef = useRef(false)
+  useEffect(() => {
+    if (loading || pages.length === 0 || scrolledToLastRef.current) return
+    scrolledToLastRef.current = true
+    const last = lastXatmMark(xatm)
+    if (!last) return
+    requestAnimationFrame(() => {
+      gridRef.current
+        ?.querySelector(`a[href="/page/${last[0]}"]`)
+        ?.scrollIntoView({ block: 'center', behavior: 'instant' })
+    })
+  }, [loading, pages, xatm])
 
   const [surahs, setSurahs] = useState([])
   useEffect(() => {
@@ -193,11 +237,15 @@ export default function PageListPage() {
           hint="public/data/pages.json fayli topilmadi yoki boʻsh."
         />
       ) : (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10">
+        <div
+          ref={gridRef}
+          className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10"
+        >
           {visiblePages.map((page, index) => {
             const surahInfo = surahsByPage.get(page.number)
             const startsSurah = surahInfo?.starting.length > 0
             const readAt = xatm[page.number]
+            const dayColor = readAt ? dayColors.get(dayKey(readAt)) : null
 
             return (
               <Link
@@ -208,14 +256,15 @@ export default function PageListPage() {
               >
                 <Card
                   className={`group hover:border-accent/50 relative flex h-full flex-col items-center justify-center gap-1 p-3.5 text-center transition-colors ${
-                    readAt
-                      ? 'border-emerald-500/70! bg-emerald-500/[0.07]!'
-                      : startsSurah
-                        ? 'border-accent/45! bg-accent/5!'
-                        : ''
+                    readAt ? '' : startsSurah ? 'border-accent/45! bg-accent/5!' : ''
                   }`}
+                  style={
+                    dayColor
+                      ? { borderColor: `${dayColor}b3`, backgroundColor: `${dayColor}12` }
+                      : undefined
+                  }
                 >
-                  <ReadToggle pageNumber={page.number} readAt={readAt} />
+                  <ReadToggle pageNumber={page.number} readAt={readAt} color={dayColor} />
                   {startsSurah ? (
                     <span
                       className="text-accent absolute top-1.5 right-2.5 text-[15px] leading-none"
@@ -232,7 +281,8 @@ export default function PageListPage() {
                   <SurahLabel info={surahInfo} />
                   {readAt ? (
                     <span
-                      className="text-[10px] font-medium text-emerald-500 tabular-nums"
+                      className="text-[10px] font-medium tabular-nums"
+                      style={{ color: dayColor }}
                       title="Oxirgi marta o'qildi deb belgilangan vaqt"
                     >
                       {formatReadAt(readAt)}

@@ -1,5 +1,52 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { TOTAL_PAGES, formatReadAt, lastXatmMark, useXatm, xatmStartedAt } from '../lib/xatm.js'
+
+const DAY = 86_400_000
+
+function startOfDay(timestamp) {
+  const date = new Date(timestamp)
+  date.setHours(0, 0, 0, 0)
+  return date
+}
+
+/* Oyning oxirgi kunidan oshib ketmasdan oy qo'shish: 31.01 + 1 oy → 28/29.02 */
+function addMonths(date, months) {
+  const year = date.getFullYear()
+  const month = date.getMonth() + months
+  const lastDay = new Date(year, month + 1, 0).getDate()
+  return new Date(year, month, Math.min(date.getDate(), lastDay))
+}
+
+/**
+ * Xatm boshlanganidan beri o'tgan muddat: jami kunlar va kalendar bo'yicha
+ * oy / hafta / kun ko'rinishida (masalan, 15 kun → "2 hafta 1 kun").
+ */
+function elapsedSince(startedAt, now) {
+  const from = startOfDay(startedAt)
+  const to = startOfDay(now)
+  const totalDays = Math.max(0, Math.round((to - from) / DAY))
+  let months = (to.getFullYear() - from.getFullYear()) * 12 + to.getMonth() - from.getMonth()
+  while (months > 0 && addMonths(from, months) > to) months -= 1
+  months = Math.max(0, months)
+  const rest = Math.max(0, Math.round((to - addMonths(from, months)) / DAY))
+  const parts = [
+    months ? `${months} oy` : null,
+    Math.floor(rest / 7) ? `${Math.floor(rest / 7)} hafta` : null,
+    rest % 7 ? `${rest % 7} kun` : null,
+  ].filter(Boolean)
+  return { totalDays, breakdown: parts.join(' ') }
+}
+
+/* Kun almashganini sezish uchun daqiqasiga bir marta yangilanadi */
+function useNow() {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000)
+    return () => clearInterval(timer)
+  }, [])
+  return now
+}
 
 /* Doira shaklidagi progress — markazida foiz */
 function XatmRing({ ratio, percent }) {
@@ -49,6 +96,8 @@ export default function XatmProgress() {
   const percent = Math.round(ratio * 1000) / 10
   const startedAt = xatmStartedAt(xatm)
   const last = lastXatmMark(xatm)
+  const now = useNow()
+  const elapsed = startedAt ? elapsedSince(startedAt, now) : null
 
   return (
     <Link
@@ -61,11 +110,12 @@ export default function XatmProgress() {
         <span className="text-ink-faint text-xs">/ {TOTAL_PAGES}</span>
       </span>
 
-      {/* Chiziq uzunligi oyna kengligiga qarab: 1264px oynada 224px, keng ekranda 352px gacha;
-          1100px dan tor oynada navbarga sig'maydi — u yerda son va doira yetarli */}
+      {/* Chiziq uzunligi oyna kengligiga qarab (kunlar bloki uchun ham joy qoldiriladi):
+          1264px oynada 124px, ~1500px dan keng ekranda 352px; 1190px dan tor oynada
+          navbarga sig'maydi — u yerda son, doira va kunlar yetarli */}
       <span
-        className="relative mt-3 hidden flex-none min-[1100px]:block"
-        style={{ width: 'clamp(48px, calc(100vw - 1040px), 352px)' }}
+        className="relative mt-3 hidden flex-none min-[1190px]:block"
+        style={{ width: 'clamp(48px, calc(100vw - 1140px), 352px)' }}
       >
         {/* Foiz — yashil chiziq tugagan joyning tepasida, chetdan chiqib ketmaydi */}
         <span
@@ -84,10 +134,22 @@ export default function XatmProgress() {
 
       <XatmRing ratio={ratio} percent={percent} />
 
+      {/* Xatm boshlanganidan beri o'tgan kunlar, ostida oy / hafta / kun ko'rinishida */}
+      {elapsed ? (
+        <span className="hidden flex-col gap-0.5 leading-tight whitespace-nowrap tabular-nums min-[1100px]:flex">
+          <span className="text-ink text-[13px] font-bold">
+            {elapsed.totalDays ? `${elapsed.totalDays} kun` : 'Bugun'}
+          </span>
+          <span className="text-ink-faint text-[10px] font-medium">
+            {elapsed.totalDays ? elapsed.breakdown : 'boshlandi'}
+          </span>
+        </span>
+      ) : null}
+
       {startedAt ? (
         <>
-          <span className="bg-line hidden h-8 w-px min-[1650px]:block" />
-          <span className="text-ink-faint hidden flex-col gap-1 text-[11px] leading-tight whitespace-nowrap tabular-nums min-[1650px]:flex">
+          <span className="bg-line hidden h-8 w-px min-[1760px]:block" />
+          <span className="text-ink-faint hidden flex-col gap-1 text-[11px] leading-tight whitespace-nowrap tabular-nums min-[1760px]:flex">
             <span>
               Boshlangan vaqti:{' '}
               <span className="text-ink font-semibold">{formatReadAt(startedAt)}</span>
@@ -104,7 +166,7 @@ export default function XatmProgress() {
       ) : null}
 
       {/* To'liq ma'lumot — sanalar ko'rinmaydigan ekranlarda, sichqoncha ustiga kelganda */}
-      <span className="bg-surface border-line text-ink-soft pointer-events-none absolute top-full right-0 z-50 mt-1 hidden w-max rounded-md border px-3.5 py-3 text-left text-xs font-medium shadow-2xl group-hover:block min-[1650px]:group-hover:hidden">
+      <span className="bg-surface border-line text-ink-soft pointer-events-none absolute top-full right-0 z-50 mt-1 hidden w-max rounded-md border px-3.5 py-3 text-left text-xs font-medium shadow-2xl group-hover:block min-[1760px]:group-hover:hidden">
         <span className="text-ink block text-[13px] font-bold">Xatm holati</span>
         <span className="mt-1.5 block tabular-nums">
           <span className="font-bold text-emerald-500">{readCount}</span> / {TOTAL_PAGES} sahifa
@@ -114,6 +176,7 @@ export default function XatmProgress() {
           <span className="mt-1 block tabular-nums">
             Boshlangan vaqti:{' '}
             <span className="text-ink font-semibold">{formatReadAt(startedAt)}</span>
+            {elapsed?.totalDays ? ` · ${elapsed.totalDays} kun (${elapsed.breakdown})` : ''}
           </span>
         ) : null}
         {last ? (
