@@ -188,12 +188,13 @@ function ReadingCalendar({ totals, marksByDay, today }) {
     set.add(today.getFullYear())
     return [...set].sort((a, b) => b - a)
   }, [totals, today])
-  const [range, setRange] = useState('last')
+  const [range, setRange] = useState(() => today.getFullYear())
   const [hover, setHover] = useState(null)
   const wrapRef = useRef(null)
   const scrollRef = useRef(null)
 
-  /* «So'nggi yil» — joriy haftagacha 53 hafta; yil tanlansa — 1-yanvardan 31-dekabrgacha */
+  /* «So'nggi yil» — joriy haftagacha 53 hafta; yil tanlansa — 1-yanvardan 31-dekabrgacha
+     (hali kelmagan kunlar xira katak bo'lib ko'rinadi) */
   const weeks = useMemo(() => {
     const first = range === 'last' ? addDays(today, -weekdayIndex(today) - 52 * 7) : new Date(range, 0, 1)
     const last = range === 'last' ? today : new Date(range, 11, 31)
@@ -202,9 +203,9 @@ function ReadingCalendar({ totals, marksByDay, today }) {
     for (let day = gridStart; day <= last || weekdayIndex(day) !== 0; day = addDays(day, 1)) {
       if (weekdayIndex(day) === 0) columns.push([])
       const key = dayKey(day)
-      const visible = day >= first && day <= last && day <= today
+      const visible = day >= first && day <= last
       const ms = totals[key] ?? 0
-      columns.at(-1).push({ date: day, key, ms, visible, level: levelOf(ms) })
+      columns.at(-1).push({ date: day, key, ms, visible, future: day > today, level: levelOf(ms) })
     }
     return columns
   }, [range, today, totals])
@@ -226,10 +227,18 @@ function ReadingCalendar({ totals, marksByDay, today }) {
   const rangeTotal = weeks.flat().reduce((sum, cell) => (cell.visible ? sum + cell.ms : sum), 0)
   const rangeDays = weeks.flat().filter((cell) => cell.visible && cell.ms >= MINUTE).length
 
-  /* Tor oynada oxirgi haftalar ko'rinib tursin */
+  /* Tor oynada: «So'nggi yil»da oxirgi haftalar, yil ko'rinishida bugungi hafta ko'rinib tursin */
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollLeft = scrollRef.current.scrollWidth
-  }, [weeks])
+    const el = scrollRef.current
+    if (!el) return
+    if (range === 'last') {
+      el.scrollLeft = el.scrollWidth
+      return
+    }
+    const todayKey = dayKey(today)
+    const column = weeks.findIndex((week) => week.some((cell) => cell.key === todayKey))
+    el.scrollLeft = column >= 0 ? Math.max(0, LABEL_COLUMN + GAP + (column + 1) * STEP - el.clientWidth) : 0
+  }, [weeks, range, today])
 
   function onEnter(event, cell) {
     const wrap = wrapRef.current?.getBoundingClientRect()
@@ -289,10 +298,10 @@ function ReadingCalendar({ totals, marksByDay, today }) {
                     cell.visible ? (
                       <span
                         key={cell.key}
-                        onMouseEnter={(event) => onEnter(event, cell)}
+                        onMouseEnter={cell.future ? undefined : (event) => onEnter(event, cell)}
                         className={cn(
                           'rounded-[2px] transition-shadow',
-                          LEVELS[cell.level].className,
+                          cell.future ? 'bg-line/40' : LEVELS[cell.level].className,
                           hover?.cell.key === cell.key ? 'ring-ink/70 ring-1' : '',
                         )}
                         style={{ width: CELL, height: CELL }}
@@ -348,14 +357,16 @@ function tickLabel(minutes) {
   return minutes === 0 ? '0' : formatDuration(minutes * MINUTE, { short: true })
 }
 
-/** So'nggi 30 kun — har bir ustun bir kun */
-function Last30Chart({ totals, today }) {
+/** Shu oy (1-kundan oxirgi kungacha) — har bir ustun bir kun */
+function MonthChart({ totals, today }) {
   const [hover, setHover] = useState(null)
   const HEIGHT = 160
-  const days = Array.from({ length: 30 }, (_, index) => {
-    const date = addDays(today, index - 29)
+  const year = today.getFullYear()
+  const month = today.getMonth()
+  const days = Array.from({ length: new Date(year, month + 1, 0).getDate() }, (_, index) => {
+    const date = new Date(year, month, index + 1)
     const key = dayKey(date)
-    return { date, key, ms: totals[key] ?? 0 }
+    return { date, key, ms: totals[key] ?? 0, future: date > today }
   })
   const maxMinutes = Math.max(...days.map((day) => day.ms)) / MINUTE
   const step = TICK_STEPS.find((value) => maxMinutes / value <= 4) ?? TICK_STEPS.at(-1)
@@ -366,11 +377,11 @@ function Last30Chart({ totals, today }) {
 
   return (
     <Card className="p-6">
-      <SectionTitle>Soʻnggi 30 kun</SectionTitle>
+      <SectionTitle>Shu oy</SectionTitle>
 
       {maxMinutes < 1 ? (
         <p className="text-ink-faint mt-3 text-sm">
-          Soʻnggi 30 kunda hali oʻqish vaqti yozilmagan.
+          Bu oyda hali oʻqish vaqti yozilmagan.
         </p>
       ) : (
         <div className="mt-7 flex">
@@ -400,7 +411,7 @@ function Last30Chart({ totals, today }) {
                 {days.map((day, index) => (
                   <div
                     key={day.key}
-                    onMouseEnter={() => setHover(index)}
+                    onMouseEnter={day.future ? undefined : () => setHover(index)}
                     className={cn(
                       'relative flex h-full flex-1 items-end justify-center rounded-t-[4px] transition-colors',
                       hover === index ? 'bg-surface-2/70' : '',
@@ -441,15 +452,13 @@ function Last30Chart({ totals, today }) {
 
             <div className="text-ink-faint relative mt-2 h-4 text-[10px] tabular-nums">
               {days.map((day, index) =>
-                (days.length - 1 - index) % 7 === 0 ? (
+                index % 7 === 0 ? (
                   <span
                     key={day.key}
                     className="absolute -translate-x-1/2 whitespace-nowrap"
                     style={{ left: `${((index + 0.5) / days.length) * 100}%` }}
                   >
-                    {index === days.length - 1
-                      ? 'Bugun'
-                      : `${pad(day.date.getDate())}.${pad(day.date.getMonth() + 1)}`}
+                    {`${pad(day.date.getDate())}.${pad(day.date.getMonth() + 1)}`}
                   </span>
                 ) : null,
               )}
@@ -461,25 +470,24 @@ function Last30Chart({ totals, today }) {
   )
 }
 
-/** Kunlar ro'yxati — eng yangisi tepada (kalendar va diagrammaning jadval ko'rinishi) */
-function DayList({ totals }) {
-  const [showAll, setShowAll] = useState(false)
+/** Kunlar ro'yxati — so'nggi 7 kun, eng yangisi tepada; yangi kun qo'shilganda eng eskisi tushib qoladi */
+function DayList({ totals, today }) {
+  const fromKey = dayKey(addDays(today, -6))
   const rows = Object.entries(totals)
-    .filter(([, ms]) => ms > 0)
+    .filter(([key, ms]) => ms > 0 && key >= fromKey)
     .sort((a, b) => (a[0] < b[0] ? 1 : -1))
   const max = rows.reduce((top, [, ms]) => Math.max(top, ms), 0)
-  const visible = showAll ? rows : rows.slice(0, 10)
 
   return (
     <Card className="p-6">
       <SectionTitle>Kunlar</SectionTitle>
 
       {rows.length === 0 ? (
-        <p className="text-ink-faint mt-3 text-sm">Hali oʻqish vaqti yozilmagan.</p>
+        <p className="text-ink-faint mt-3 text-sm">Soʻnggi 7 kunda hali oʻqish vaqti yozilmagan.</p>
       ) : (
         <>
           <ul className="divide-line mt-3 divide-y">
-            {visible.map(([key, ms]) => {
+            {rows.map(([key, ms]) => {
               const date = parseKey(key)
               return (
                 <li key={key} className="flex items-center gap-3 py-2 text-sm">
@@ -498,11 +506,6 @@ function DayList({ totals }) {
               )
             })}
           </ul>
-          {rows.length > 10 ? (
-            <Button variant="ghost" size="sm" className="mt-3" onClick={() => setShowAll(!showAll)}>
-              {showAll ? 'Kamroq koʻrsatish' : `Hammasini koʻrsatish (${rows.length} kun)`}
-            </Button>
-          ) : null}
         </>
       )}
     </Card>
@@ -535,8 +538,8 @@ export default function ReadingTimeSettings() {
     <div className="space-y-5">
       <TodayCard stats={stats} today={today} />
       <ReadingCalendar totals={totals} marksByDay={marksByDay} today={today} />
-      <Last30Chart totals={totals} today={today} />
-      <DayList totals={totals} />
+      <MonthChart totals={totals} today={today} />
+      <DayList totals={totals} today={today} />
 
       <Card className="p-6">
         <SectionTitle>Oʻqish vaqtini tozalash</SectionTitle>
