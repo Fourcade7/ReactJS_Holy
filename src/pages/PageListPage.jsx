@@ -11,7 +11,15 @@ import {
   Input,
   PageHeader,
   Skeleton,
+  cn,
 } from '../components/Ui.jsx'
+import {
+  LIST_BOX,
+  ListSkeleton,
+  rowClass,
+  useListView,
+  ViewToggle,
+} from '../components/ViewToggle.jsx'
 
 /* Betda boshlanadigan sura(lar) ajralib turadi, qolgan betlarda davom etayotgan sura xira */
 function SurahLabel({ info }) {
@@ -57,8 +65,14 @@ function dayKey(timestamp) {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
 }
 
-/* Kartochka ichidagi «o'qildi» belgisi — Link ichida bo'lgani uchun o'tishni to'xtatamiz */
-function ReadToggle({ pageNumber, readAt, color }) {
+/* «O'qildi» belgisi — Link ichida bo'lgani uchun o'tishni to'xtatamiz.
+   Kartochkada burchakka qo'yiladi (standart), ro'yxatda qatorning o'z ustunida turadi */
+function ReadToggle({
+  pageNumber,
+  readAt,
+  color,
+  className = 'absolute top-1.5 left-1.5',
+}) {
   const done = Boolean(readAt)
 
   return (
@@ -69,7 +83,7 @@ function ReadToggle({ pageNumber, readAt, color }) {
         event.stopPropagation()
         toggleXatmPage(pageNumber)
       }}
-      className={`absolute top-1.5 left-1.5 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border transition-colors ${
+      className={`${className} flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border transition-colors ${
         done
           ? 'text-white hover:brightness-90'
           : 'border-line text-transparent hover:border-emerald-500/70 hover:text-emerald-500/70'
@@ -94,7 +108,88 @@ function ReadToggle({ pageNumber, readAt, color }) {
   )
 }
 
+/** Jadval uslubidagi sahifalar ro'yxati: belgi · bet raqami · sura · o'qilgan vaqt · oyatlar soni · tarjima */
+function PageList({ pages, surahsByPage, xatm, dayColors, listRef }) {
+  return (
+    <div ref={listRef} className={LIST_BOX}>
+      {pages.map((page, index) => {
+        const surahInfo = surahsByPage.get(page.number)
+        const startsSurah = surahInfo?.starting.length > 0
+        const readAt = xatm[page.number]
+        const dayColor = readAt ? dayColors.get(dayKey(readAt)) : null
+
+        return (
+          <Link
+            key={page.number}
+            to={`/page/${page.number}`}
+            className={cn(
+              'grid grid-cols-[1.75rem_3rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2',
+              'sm:grid-cols-[1.75rem_3rem_minmax(0,1fr)_7.5rem_4.5rem_1rem]',
+              startsSurah && !readAt
+                ? 'group hover:bg-accent/10 bg-accent/5 transition-colors'
+                : rowClass(index),
+            )}
+            style={
+              dayColor
+                ? { backgroundColor: `${dayColor}14`, boxShadow: `inset 3px 0 0 ${dayColor}` }
+                : undefined
+            }
+          >
+            <ReadToggle
+              pageNumber={page.number}
+              readAt={readAt}
+              color={dayColor}
+              className="justify-self-center"
+            />
+
+            <span className="text-ink group-hover:text-accent text-[15px] font-bold tabular-nums transition-colors">
+              {page.number}
+            </span>
+
+            <span className="flex min-w-0 items-center gap-1">
+              {startsSurah ? (
+                <span
+                  className="text-accent flex-none text-[15px] leading-none"
+                  title="Shu betda yangi sura boshlanadi"
+                  aria-hidden
+                >
+                  ۞
+                </span>
+              ) : null}
+              <SurahLabel info={surahInfo} />
+            </span>
+
+            <span className="hidden sm:block">
+              {readAt ? (
+                <span
+                  className="text-[11px] font-medium tabular-nums"
+                  style={{ color: dayColor }}
+                  title="Oxirgi marta o'qildi deb belgilangan vaqt"
+                >
+                  {formatReadAt(readAt)}
+                </span>
+              ) : null}
+            </span>
+
+            <span className="text-ink-faint text-right text-xs tabular-nums">
+              {page.ayahCount} oyat
+            </span>
+
+            <span className="hidden justify-center sm:flex">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${page.hasTranslation ? 'bg-accent' : 'bg-line'}`}
+                title={page.hasTranslation ? 'Tarjima kiritilgan' : 'Tarjima yoʻq'}
+              />
+            </span>
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function PageListPage() {
+  const [view, changeView] = useListView()
   const [pages, setPages] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -205,6 +300,8 @@ export default function PageListPage() {
             </svg>
           </button>
 
+          <ViewToggle view={view} onChange={changeView} />
+
           <form className="flex items-center gap-2" onSubmit={onJump}>
             <Input
               type="number"
@@ -225,16 +322,28 @@ export default function PageListPage() {
       <Alert>{error}</Alert>
 
       {loading ? (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10">
-          {Array.from({ length: 14 }).map((_, index) => (
-            <Skeleton key={index} className="h-[74px]" />
-          ))}
-        </div>
+        view === 'list' ? (
+          <ListSkeleton rows={12} rowHeight="h-[44px]" />
+        ) : (
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10">
+            {Array.from({ length: 14 }).map((_, index) => (
+              <Skeleton key={index} className="h-[74px]" />
+            ))}
+          </div>
+        )
       ) : pages.length === 0 ? (
         <EmptyState
           icon="۩"
           title="Hozircha sahifa maʼlumoti yoʻq"
           hint="public/data/pages.json fayli topilmadi yoki boʻsh."
+        />
+      ) : view === 'list' ? (
+        <PageList
+          pages={visiblePages}
+          surahsByPage={surahsByPage}
+          xatm={xatm}
+          dayColors={dayColors}
+          listRef={gridRef}
         />
       ) : (
         <div

@@ -3,7 +3,23 @@ import { Link } from 'react-router-dom'
 import { errorMessage, surahApi } from '../api/client.js'
 import MushafExcerpt from '../components/MushafExcerpt.jsx'
 import TodayReminder from '../components/TodayReminder.jsx'
-import { Alert, Card, Diamond, EmptyState, Input, Skeleton, Tabs } from '../components/Ui.jsx'
+import {
+  Alert,
+  Card,
+  Diamond,
+  EmptyState,
+  Input,
+  Skeleton,
+  Tabs,
+  cn,
+} from '../components/Ui.jsx'
+import {
+  LIST_BOX,
+  ListSkeleton,
+  rowClass,
+  useListView,
+  ViewToggle,
+} from '../components/ViewToggle.jsx'
 import { usePref } from '../lib/reading.js'
 import { useReminders } from '../lib/reminders.js'
 import { surahXatmStatus, toggleXatmSurah, useXatm } from '../lib/xatm.js'
@@ -31,8 +47,9 @@ const HOME_TABS = [
   },
 ]
 
-/* Surani o'qildi deb belgilash — shu suraning barcha betlari belgilanadi */
-function SurahReadToggle({ surah, status }) {
+/* Surani o'qildi deb belgilash — shu suraning barcha betlari belgilanadi.
+   Kartochkada burchakka qo'yiladi (standart), ro'yxatda qatorning o'z ustunida turadi */
+function SurahReadToggle({ surah, status, className = 'absolute top-1.5 right-1.5 z-10' }) {
   const done = status.done
 
   return (
@@ -43,7 +60,7 @@ function SurahReadToggle({ surah, status }) {
         event.stopPropagation()
         toggleXatmSurah(surah.number)
       }}
-      className={`absolute top-1.5 right-1.5 z-10 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border transition-colors ${
+      className={`${className} flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border transition-colors ${
         done
           ? 'border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600'
           : status.read > 0
@@ -77,12 +94,99 @@ function SurahReadToggle({ surah, status }) {
   )
 }
 
+/* Suraning ma'nosi, bo'lmasa Makkiy/Madaniy */
+function surahSubtitle(surah) {
+  return (
+    surah.meaningUz ||
+    (surah.revelationPlace === 'makka'
+      ? 'Makkiy'
+      : surah.revelationPlace === 'madina'
+        ? 'Madaniy'
+        : '—')
+  )
+}
+
+function statusTitle(status) {
+  return status.done
+    ? `To'liq o'qildi: ${status.total} ta bet (${status.from}–${status.to}-betlar)`
+    : `${status.read}/${status.total} bet o'qildi · ${status.total - status.read} ta qoldi (${status.from}–${status.to}-betlar)`
+}
+
+/* Kitobdagi sura sarlavhasi xatti (KFGQPC surah-names): "003" → «آل عمران» */
+function SurahGlyph({ surah, className }) {
+  return (
+    <span
+      dir="ltr"
+      className={cn('text-ink block', className)}
+      style={{ fontFamily: '"surah-names"' }}
+      title={surah.nameArabic}
+      aria-label={surah.nameArabic}
+    >
+      {String(surah.number).padStart(3, '0')}
+    </span>
+  )
+}
+
+/** Jadval uslubidagi suralar ro'yxati: raqam · nom va ma'nosi · arabcha nomi va oyatlar soni · belgi */
+function SurahList({ surahs, xatm }) {
+  return (
+    <div className={LIST_BOX}>
+      {surahs.map((surah, index) => {
+        const status = surahXatmStatus(xatm, surah.number)
+
+        return (
+          <Link
+            key={surah.id}
+            to={`/surah/${surah.number}`}
+            className={cn(
+              rowClass(index),
+              'grid grid-cols-[2.5rem_minmax(0,1fr)_auto_1.5rem] items-center gap-3 px-4 py-2.5',
+              status?.done && 'bg-emerald-500/[0.07]!',
+            )}
+          >
+            <span className="text-ink-faint text-sm font-semibold tabular-nums">{surah.number}</span>
+
+            <span className="min-w-0">
+              <span className="text-ink group-hover:text-accent block truncate text-[15px] font-semibold transition-colors">
+                {surah.nameUz}
+              </span>
+              <span className="text-ink-faint block truncate text-xs">{surahSubtitle(surah)}</span>
+              {status?.read > 0 ? (
+                <span
+                  className="block truncate text-[11px] font-semibold whitespace-nowrap text-emerald-500 tabular-nums"
+                  title={statusTitle(status)}
+                >
+                  {status.done ? "✓ O'qildi" : `${status.read}/${status.total} bet o'qildi`}
+                </span>
+              ) : null}
+            </span>
+
+            <span className="text-right">
+              <SurahGlyph surah={surah} className="text-[26px] leading-[21px]" />
+              <span className="text-ink-faint mt-1 block text-xs">
+                {surah.totalAyahs || surah.savedAyahs} oyat
+              </span>
+            </span>
+
+            {status ? (
+              <SurahReadToggle surah={surah} status={status} className="justify-self-center" />
+            ) : (
+              <span />
+            )}
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function SurahListPage() {
   const [surahs, setSurahs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
   const [order, setOrder] = usePref('surah-order', 'asc')
+  const [view, changeView] = useListView()
   const xatm = useXatm()
   const reminders = useReminders()
   const [tab, setTab] = useState(HOME_TABS[0].id)
@@ -142,34 +246,42 @@ export default function SurahListPage() {
           />
         </div>
 
-        <button
-          onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
-          className="text-ink-faint hover:text-ink flex cursor-pointer items-center gap-1.5 text-xs font-semibold tracking-wider uppercase transition-colors"
-        >
-          Tartib:
-          <span className="text-ink">{order === 'asc' ? 'Oʻsish' : 'Kamayish'}</span>
-          <svg
-            viewBox="0 0 24 24"
-            className={`h-3.5 w-3.5 transition-transform duration-200 ${order === 'asc' ? '' : 'rotate-180'}`}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        <div className="flex flex-wrap items-center gap-4">
+          <button
+            onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
+            className="text-ink-faint hover:text-ink flex cursor-pointer items-center gap-1.5 text-xs font-semibold tracking-wider uppercase transition-colors"
           >
-            <path d="M18 15l-6-6-6 6" />
-          </svg>
-        </button>
+            Tartib:
+            <span className="text-ink">{order === 'asc' ? 'Oʻsish' : 'Kamayish'}</span>
+            <svg
+              viewBox="0 0 24 24"
+              className={`h-3.5 w-3.5 transition-transform duration-200 ${order === 'asc' ? '' : 'rotate-180'}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 15l-6-6-6 6" />
+            </svg>
+          </button>
+
+          <ViewToggle view={view} onChange={changeView} />
+        </div>
       </div>
 
       <Alert>{error}</Alert>
 
       {loading ? (
-        <div className="grid gap-3 sm:grid-cols-2 min-[75rem]:grid-cols-3">
-          {Array.from({ length: 9 }).map((_, index) => (
-            <Skeleton key={index} className="h-[86px]" />
-          ))}
-        </div>
+        view === 'list' ? (
+          <ListSkeleton />
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 min-[75rem]:grid-cols-3">
+            {Array.from({ length: 9 }).map((_, index) => (
+              <Skeleton key={index} className="h-[86px]" />
+            ))}
+          </div>
+        )
       ) : visible.length === 0 ? (
         <EmptyState
           title={query ? 'Hech narsa topilmadi' : "Hozircha sura yo'q"}
@@ -179,6 +291,8 @@ export default function SurahListPage() {
               : 'public/data/surahs.json fayli topilmadi yoki boʻsh.'
           }
         />
+      ) : view === 'list' ? (
+        <SurahList surahs={visible} xatm={xatm} />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 min-[75rem]:grid-cols-3">
           {visible.map((surah, index) => {
@@ -201,22 +315,11 @@ export default function SurahListPage() {
 
                   <div className="min-w-0 flex-1">
                     <p className="text-ink truncate font-bold">{surah.nameUz}</p>
-                    <p className="text-ink-faint truncate text-[13px]">
-                      {surah.meaningUz ||
-                        (surah.revelationPlace === 'makka'
-                          ? 'Makkiy'
-                          : surah.revelationPlace === 'madina'
-                            ? 'Madaniy'
-                            : '—')}
-                    </p>
+                    <p className="text-ink-faint truncate text-[13px]">{surahSubtitle(surah)}</p>
                     {status?.read > 0 ? (
                       <p
                         className="mt-0.5 truncate text-[11px] font-semibold whitespace-nowrap text-emerald-500 tabular-nums"
-                        title={
-                          status.done
-                            ? `To'liq o'qildi: ${status.total} ta bet (${status.from}–${status.to}-betlar)`
-                            : `${status.read}/${status.total} bet o'qildi · ${status.total - status.read} ta qoldi (${status.from}–${status.to}-betlar)`
-                        }
+                        title={statusTitle(status)}
                       >
                         {status.done ? "✓ O'qildi" : `${status.read}/${status.total} bet o'qildi`}
                       </p>
@@ -224,16 +327,7 @@ export default function SurahListPage() {
                   </div>
 
                   <div className="flex-none pr-4 text-right">
-                    {/* Kitobdagi sura sarlavhasi xatti (KFGQPC surah-names): "003" → «آل عمران» */}
-                    <p
-                      dir="ltr"
-                      className="text-ink text-[28px] leading-[22.5px]"
-                      style={{ fontFamily: '"surah-names"' }}
-                      title={surah.nameArabic}
-                      aria-label={surah.nameArabic}
-                    >
-                      {String(surah.number).padStart(3, '0')}
-                    </p>
+                    <SurahGlyph surah={surah} className="text-[28px] leading-[22.5px]" />
                     <p className="text-ink-faint mt-1 text-[13px]">
                       {surah.totalAyahs || surah.savedAyahs} oyat
                     </p>

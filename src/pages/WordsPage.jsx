@@ -12,8 +12,18 @@ import {
   Skeleton,
   cn,
 } from '../components/Ui.jsx'
+import {
+  LIST_BOX,
+  ListSkeleton,
+  rowClass,
+  useListView,
+  ViewToggle,
+} from '../components/ViewToggle.jsx'
 
 const PAGE_SIZE = 24
+
+/* Hisoblagich bo'lmasa ham so'z kamida bir marta uchragan */
+const timesOf = (word) => (word.count > 1 ? word.count : 1)
 
 function DifficultyDots({ score }) {
   const level = score >= 90 ? 3 : score >= 80 ? 2 : 1
@@ -31,7 +41,54 @@ function DifficultyDots({ score }) {
   )
 }
 
+/** Jadval uslubidagi so'zlar ro'yxati: o'qilishi · oyat · necha marta · qiyinlik · arabcha so'z */
+function WordList({ items }) {
+  return (
+    <div className={LIST_BOX}>
+      {items.map((word, index) => (
+        <Link
+          key={word.id}
+          to={`/surah/${word.firstSurah}#ayah-${word.firstAyah}`}
+          className={cn(
+            rowClass(index),
+            'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5',
+            'md:grid-cols-[minmax(0,1fr)_5.5rem_2.5rem_10rem]',
+          )}
+        >
+          <span className="min-w-0">
+            <span className="text-accent block truncate text-[15px] font-semibold">
+              {word.transliteration || '—'}
+            </span>
+            <span className="text-ink-faint group-hover:text-accent block truncate text-xs transition-colors">
+              {word.firstSurah}:{word.firstAyah}-oyat →
+              <span className="md:hidden"> · {timesOf(word)} marta</span>
+            </span>
+          </span>
+
+          <span className="hidden md:block">
+            <Badge>{timesOf(word)} marta</Badge>
+          </span>
+
+          <span className="hidden justify-center md:flex">
+            <DifficultyDots score={word.difficulty} />
+          </span>
+
+          <span
+            lang="ar"
+            dir="rtl"
+            className="arabic text-ink truncate text-right text-2xl"
+            style={{ lineHeight: 1.8 }}
+          >
+            {word.text}
+          </span>
+        </Link>
+      ))}
+    </div>
+  )
+}
+
 export default function WordsPage() {
+  const [view, changeView] = useListView()
   const [query, setQuery] = useState('')
   const [search, setSearch] = useState('')
   const [items, setItems] = useState([])
@@ -88,24 +145,27 @@ export default function WordsPage() {
         title="Qiyin soʻzlar"
         subtitle={`Qur'ondagi oʻqilishi eng ogʻir ${total} ta soʻz — harfi koʻp, madd va hamzali kalimalar`}
       >
-        <div className="relative w-full max-w-[280px]">
-          <svg
-            viewBox="0 0 24 24"
-            className="text-ink-faint pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="M20 20l-3.5-3.5" />
-          </svg>
-          <Input
-            className="pl-10"
-            placeholder="Soʻz qidirish…"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
+        <div className="flex w-full items-center gap-3 sm:w-auto">
+          <div className="relative min-w-0 flex-1 sm:w-[240px] sm:flex-none">
+            <svg
+              viewBox="0 0 24 24"
+              className="text-ink-faint pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="M20 20l-3.5-3.5" />
+            </svg>
+            <Input
+              className="pl-10"
+              placeholder="Soʻz qidirish…"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </div>
+          <ViewToggle view={view} onChange={changeView} />
         </div>
       </PageHeader>
 
@@ -119,11 +179,15 @@ export default function WordsPage() {
       <div ref={listRef} className="scroll-mt-24" />
 
       {loading ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 9 }).map((_, index) => (
-            <Skeleton key={index} className="h-[124px]" />
-          ))}
-        </div>
+        view === 'list' ? (
+          <ListSkeleton rows={12} />
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 9 }).map((_, index) => (
+              <Skeleton key={index} className="h-[124px]" />
+            ))}
+          </div>
+        )
       ) : items.length === 0 ? (
         <EmptyState
           title={search ? 'Hech narsa topilmadi' : 'Roʻyxat boʻsh'}
@@ -131,40 +195,40 @@ export default function WordsPage() {
         />
       ) : (
         <>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((word, index) => (
-              <Link
-                key={word.id}
-                to={`/surah/${word.firstSurah}#ayah-${word.firstAyah}`}
-                className="animate-rise"
-                style={{ animationDelay: `${Math.min(index, 12) * 20}ms` }}
-              >
-                <Card className="group hover:border-accent/50 flex h-full flex-col p-5 transition-colors">
-                  <p className="arabic text-ink text-3xl leading-[1.9]">{word.text}</p>
+          {view === 'list' ? (
+            <WordList items={items} />
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((word, index) => (
+                <Link
+                  key={word.id}
+                  to={`/surah/${word.firstSurah}#ayah-${word.firstAyah}`}
+                  className="animate-rise"
+                  style={{ animationDelay: `${Math.min(index, 12) * 20}ms` }}
+                >
+                  <Card className="group hover:border-accent/50 flex h-full flex-col p-5 transition-colors">
+                    <p className="arabic text-ink text-3xl leading-[1.9]">{word.text}</p>
 
-                  {word.transliteration ? (
-                    <p className="text-accent mt-3 text-[15px] font-semibold">
-                      {word.transliteration}
-                    </p>
-                  ) : null}
+                    {word.transliteration ? (
+                      <p className="text-accent mt-3 text-[15px] font-semibold">
+                        {word.transliteration}
+                      </p>
+                    ) : null}
 
-                  <div className="border-line mt-auto flex items-center justify-between gap-2 border-t pt-3 text-[11px]">
-                    <span className="text-ink-faint group-hover:text-accent transition-colors">
-                      {word.firstSurah}:{word.firstAyah}-oyat →
-                    </span>
-                    <span className="flex items-center gap-2">
-                      {word.count > 1 ? (
-                        <Badge>{word.count} marta</Badge>
-                      ) : (
-                        <Badge>1 marta</Badge>
-                      )}
-                      <DifficultyDots score={word.difficulty} />
-                    </span>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                    <div className="border-line mt-auto flex items-center justify-between gap-2 border-t pt-3 text-[11px]">
+                      <span className="text-ink-faint group-hover:text-accent transition-colors">
+                        {word.firstSurah}:{word.firstAyah}-oyat →
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Badge>{timesOf(word)} marta</Badge>
+                        <DifficultyDots score={word.difficulty} />
+                      </span>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
 
           <ReaderPager
             label={`${pageIndex + 1} / ${totalPages}`}
