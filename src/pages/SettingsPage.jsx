@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { PageHeader, Tabs } from '../components/Ui.jsx'
+import { readReturnPoint, restoreScroll } from '../lib/returnPoint.js'
 import DataSourceSettings from './settings/DataSourceSettings.jsx'
 import ReadingTimeSettings from './settings/ReadingTimeSettings.jsx'
 import ReminderSettings from './settings/ReminderSettings.jsx'
 import TextSettings from './settings/TextSettings.jsx'
+import ThemeSettings from './settings/ThemeSettings.jsx'
 import XatmSettings from './settings/XatmSettings.jsx'
 
 const TABS = [
@@ -12,6 +14,11 @@ const TABS = [
     id: 'text',
     label: "Matn oʻlchami",
     hint: 'Sura, juz va sahifalarni oʻqishdagi matn oʻlchamlari.',
+  },
+  {
+    id: 'theme',
+    label: 'Mavzu',
+    hint: 'Butun sayt koʻrinishi: ranglar, orqa fon, kartochkalar va burchaklar.',
   },
   {
     id: 'data',
@@ -35,6 +42,33 @@ const TABS = [
   },
 ]
 
+/* Sozlamalarga kelishdan oldingi sahifaga qaytish — o'sha joyiga aylantirib */
+function BackLink() {
+  /* Sozlamalarda turganda qaytish nuqtasi o'zgarmaydi — bir marta o'qiladi */
+  const [back] = useState(readReturnPoint)
+
+  return (
+    <Link
+      to={back.path}
+      onClick={() => restoreScroll(back)}
+      className="text-ink-faint hover:text-accent mb-4 inline-flex max-w-full items-center gap-1.5 text-[13px] font-semibold transition-colors"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4 flex-none"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+      <span className="truncate">{back.label}</span>
+    </Link>
+  )
+}
+
 export default function SettingsPage() {
   const [params] = useSearchParams()
   /* ?tab=reminders kabi havola bilan kerakli tab ochiladi */
@@ -51,12 +85,14 @@ export default function SettingsPage() {
 
   return (
     <>
+      <BackLink />
       <PageHeader title="Sozlamalar" subtitle={active.hint} />
 
       <Tabs tabs={TABS} value={tab} onChange={setTab} className="mb-6" />
 
       <div className="animate-fade">
         {tab === 'text' ? <TextSettings /> : null}
+        {tab === 'theme' ? <ThemeSettings /> : null}
         {tab === 'data' ? <DataSourceSettings /> : null}
         {tab === 'xatm' ? <XatmSettings /> : null}
         {tab === 'reading' ? <ReadingTimeSettings /> : null}

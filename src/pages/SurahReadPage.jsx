@@ -11,32 +11,12 @@ import {
 import MushafPage from '../components/MushafPage.jsx'
 import PageReadMark from '../components/PageReadMark.jsx'
 import PageTranslation from '../components/PageTranslation.jsx'
-import { Alert, Badge, Card, EmptyState, Loader, Segmented } from '../components/Ui.jsx'
+import SurahInfo from '../components/SurahInfo.jsx'
+import { Alert, Card, EmptyState, Loader, Segmented } from '../components/Ui.jsx'
 import { saveLastRead } from '../lib/lastRead.js'
-import { surahXatmStatus, useXatm } from '../lib/xatm.js'
 import { TEXT_MODES, VIEW_MODES, groupByPage, usePref } from '../lib/reading.js'
 
 const AYAHS_PER_VIEW = 10
-
-/** Sura haqida qisqa ma'lumot: qayerda nozil bo'lgani, oyatlar soni, mushafdagi o'rni */
-function surahInfo(surah) {
-  const first = surah.ayahs[0]
-  const last = surah.ayahs.at(-1)
-  if (!first) return null
-  const place =
-    surah.revelationPlace === 'makka'
-      ? 'Makkada'
-      : surah.revelationPlace === 'madina'
-        ? 'Madinada'
-        : null
-  const total = surah.totalAyahs || surah.ayahs.length
-  const pages =
-    first.pageNumber === last.pageNumber
-      ? `${first.pageNumber}-sahifasida`
-      : `${first.pageNumber}–${last.pageNumber}-sahifalarida (${last.pageNumber - first.pageNumber + 1} bet)`
-  const juz = first.juz === last.juz ? `${first.juz}-juzda` : `${first.juz}–${last.juz}-juzlarda`
-  return `${place ? `${place} nozil boʻlgan, ` : ''}${total} oyatdan iborat. Mushafning ${pages}, ${juz} joylashgan.`
-}
 
 export default function SurahReadPage() {
   const { number } = useParams()
@@ -46,7 +26,6 @@ export default function SurahReadPage() {
   const [viewMode, setViewMode] = usePref('view-mode', 'ayah')
   const [textMode, setTextMode] = usePref('text-mode', 'both')
   const [cursor, setCursor] = useState(0)
-  const xatm = useXatm()
   const { hash } = useLocation()
   const readerRef = useRef(null)
 
@@ -118,7 +97,6 @@ export default function SurahReadPage() {
   const showArabic = textMode !== 'translation'
   const showTranslation = textMode !== 'arabic'
   const surahNumber = surah.number
-  const xatmStatus = surahXatmStatus(xatm, surahNumber)
 
   const visibleAyahs =
     viewMode === 'ayah'
@@ -174,47 +152,7 @@ export default function SurahReadPage() {
       </Link>
 
       <Card className="mb-6 p-5 sm:p-6">
-        <div className="flex items-start gap-4">
-          <div className="bg-surface-2 hidden h-16 min-w-16 flex-none items-center justify-center rounded-md px-2 sm:flex">
-            {/* Kitobdagi sura sarlavhasi xatti (KFGQPC surah-names): "002" → «البقرة» */}
-            <span
-              dir="ltr"
-              className="text-accent text-[32px] leading-none"
-              style={{ fontFamily: '"surah-names"' }}
-              title={surah.nameArabic}
-              aria-label={surah.nameArabic}
-            >
-              {String(surah.number).padStart(3, '0')}
-            </span>
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <h1 className="text-ink text-2xl font-extrabold tracking-tight">
-              {surah.number}. {surah.nameUz}
-            </h1>
-            {surah.meaningUz ? (
-              <p className="text-accent mt-0.5 text-lg font-semibold">{surah.meaningUz}</p>
-            ) : null}
-            <p className="text-ink-faint mt-2 text-[13px] leading-relaxed">{surahInfo(surah)}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {surah.revelationPlace ? (
-                <Badge>{surah.revelationPlace === 'makka' ? 'Makkiy' : 'Madaniy'}</Badge>
-              ) : null}
-              <Badge tone="accent">{surah.totalAyahs || surah.ayahs.length} oyat</Badge>
-              {surah.startPage ? <Badge>{surah.startPage}-sahifadan</Badge> : null}
-              {xatmStatus ? (
-                <Badge
-                  className="bg-emerald-500/10! text-emerald-500! tabular-nums"
-                  title={`${xatmStatus.from}–${xatmStatus.to}-betlar`}
-                >
-                  {xatmStatus.done
-                    ? `✓ Toʻliq oʻqildi · ${xatmStatus.total} bet`
-                    : `${xatmStatus.read}/${xatmStatus.total} bet oʻqildi · ${xatmStatus.total - xatmStatus.read} ta qoldi`}
-                </Badge>
-              ) : null}
-            </div>
-          </div>
-        </div>
+        <SurahInfo surah={surah} />
 
         <div className="border-line mt-5 flex flex-wrap items-center gap-2 border-t pt-4">
           <Segmented options={VIEW_MODES} value={viewMode} onChange={setViewMode} />

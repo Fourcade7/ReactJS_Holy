@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { errorMessage, pageApi } from '../api/client.js'
+import { Link, Navigate, useParams } from 'react-router-dom'
+import { errorMessage, pageApi, surahApi } from '../api/client.js'
 import MushafPage from '../components/MushafPage.jsx'
 import PageReadMark from '../components/PageReadMark.jsx'
 import PageTranslation from '../components/PageTranslation.jsx'
 import { AyahHoverScope, MushafText, ReaderPager } from '../components/Quran.jsx'
+import SurahInfo from '../components/SurahInfo.jsx'
 import {
   Badge,
-  Button,
   Card,
   EmptyState,
   Loader,
@@ -16,14 +16,39 @@ import {
 import { readingWidth } from '../lib/display.js'
 import { saveLastRead } from '../lib/lastRead.js'
 import { TEXT_MODES, usePref } from '../lib/reading.js'
+import { surahPageRange } from '../lib/xatm.js'
+
+/**
+ * Suralar bo'limidan ochilgan bet (/surah/S/page/N) shu sura ichida qoladi. Oldingi yoki keyingi bet
+ * sura chegarasidan chiqsa, o'sha betni egallagan qo'shni suraga o'tiladi: oldinga yurganda bet
+ * boshidagi, orqaga yurganda bet oxiridagi sura (suralar betlar bo'yicha tartibli).
+ */
+function surahForPage(surahNumber, pageNumber) {
+  const step = pageNumber < surahPageRange(surahNumber)[0] ? -1 : 1
+  for (let number = surahNumber; number >= 1 && number <= 114; number += step) {
+    const [from, to] = surahPageRange(number)
+    if (pageNumber >= from && pageNumber <= to) return number
+  }
+  return surahNumber
+}
 
 export default function PageReadPage() {
-  const { number } = useParams()
+  const { surah: surahParam, number } = useParams()
   const current = Number(number)
+  /* Suralar bo'limidan kelingan bo'lsa — shu sura (bet uning ichida bo'lishi kerak), aks holda null */
+  const surahRange = surahParam ? surahPageRange(Number(surahParam)) : null
+  const contextSurah =
+    surahRange && current >= surahRange[0] && current <= surahRange[1] ? Number(surahParam) : null
+  const pagePath = (pageNumber) =>
+    contextSurah
+      ? `/surah/${surahForPage(contextSurah, pageNumber)}/page/${pageNumber}`
+      : `/page/${pageNumber}`
+  const readPath = pagePath(current)
   const [page, setPage] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [textMode, setTextMode] = usePref('text-mode', 'both')
+  const [surahNames, setSurahNames] = useState({})
 
   useEffect(() => {
     setLoading(true)
@@ -33,11 +58,27 @@ export default function PageReadPage() {
       .get(number)
       .then((data) => {
         setPage(data)
-        saveLastRead({ path: `/page/${current}`, label: `${current}-sahifa` })
+        saveLastRead({ path: readPath, label: `${current}-sahifa` })
       })
       .catch((err) => setError(errorMessage(err)))
       .finally(() => setLoading(false))
-  }, [number, current])
+  }, [number, current, readPath])
+
+  /* «Orqaga» havolasidagi sura nomi bet almashganda miltillamasligi uchun ro'yxatdan bir marta olinadi */
+  const hasContext = Boolean(contextSurah)
+  useEffect(() => {
+    if (!hasContext) return
+    surahApi
+      .list()
+      .then((list) =>
+        setSurahNames(
+          Object.fromEntries((Array.isArray(list) ? list : []).map((s) => [s.number, s.nameUz])),
+        ),
+      )
+      .catch(() => setSurahNames({}))
+  }, [hasContext])
+
+  if (surahParam && !contextSurah) return <Navigate to={`/page/${current}`} replace />
 
   const showArabic = textMode !== 'translation'
   const showTranslation = textMode !== 'arabic'
@@ -47,6 +88,10 @@ export default function PageReadPage() {
       (page?.ayahs ?? []).map((ayah) => [ayah.surah.number, ayah.surah]),
     ).values(),
   ]
+  /* Shu betda boshlanadigan suralar (1-oyati shu betda) — ular haqida ma'lumot ko'rsatiladi */
+  const startingSurahs = (page?.ayahs ?? [])
+    .filter((ayah) => ayah.numberInSurah === 1)
+    .map((ayah) => ayah.surah)
 
   return (
     <div className="mx-auto w-full" style={readingWidth(48)}>
@@ -68,7 +113,7 @@ export default function PageReadPage() {
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <Link
-          to="/pages"
+          to={contextSurah ? `/surah/${contextSurah}/pages` : '/pages'}
           className="text-ink-faint hover:text-accent inline-flex items-center gap-1.5 text-[13px] font-semibold transition-colors"
         >
           <svg
@@ -82,7 +127,11 @@ export default function PageReadPage() {
           >
             <path d="M15 18l-6-6 6-6" />
           </svg>
-          Sahifalar
+          {contextSurah
+            ? surahNames[contextSurah]
+              ? `${surahNames[contextSurah]} sahifalari`
+              : 'Sura sahifalari'
+            : 'Sahifalar'}
         </Link>
 
         <Segmented options={TEXT_MODES} value={textMode} onChange={setTextMode} />
@@ -109,6 +158,16 @@ export default function PageReadPage() {
                 </Link>
               ))}
             </div>
+          ) : null}
+
+          {startingSurahs.length > 0 ? (
+            <Card className="divide-line mb-5 divide-y">
+              {startingSurahs.map((surah) => (
+                <div key={surah.number} className="p-5 sm:p-6">
+                  <SurahInfo surah={surah} as="h2" />
+                </div>
+              ))}
+            </Card>
           ) : null}
 
           <Card className="px-5 py-8 sm:px-8 sm:py-10">
@@ -167,9 +226,9 @@ export default function PageReadPage() {
       <ReaderPager
         keyboard
         label={`${current} / 604`}
-        prev={current > 1 ? { label: 'Oldingi sahifa', to: `/page/${current - 1}` } : null}
+        prev={current > 1 ? { label: 'Oldingi sahifa', to: pagePath(current - 1) } : null}
         next={
-          current < 604 ? { label: 'Keyingi sahifa', to: `/page/${current + 1}` } : null
+          current < 604 ? { label: 'Keyingi sahifa', to: pagePath(current + 1) } : null
         }
       />
     </div>

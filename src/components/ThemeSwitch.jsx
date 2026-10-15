@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useColorMode } from '../lib/colorMode.js'
 import { cn } from './Ui.jsx'
 
 const ICON_PROPS = {
@@ -43,36 +43,8 @@ const MODES = [
   },
 ]
 
-function prefersDark() {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-}
-
 export default function ThemeSwitch() {
-  const [mode, setMode] = useState(() => {
-    try {
-      return localStorage.getItem('theme') || 'dark'
-    } catch {
-      return 'dark'
-    }
-  })
-
-  useEffect(() => {
-    const dark = mode === 'dark' || (mode === 'system' && prefersDark())
-    document.documentElement.classList.toggle('dark', dark)
-    try {
-      localStorage.setItem('theme', mode)
-    } catch {
-      /* private rejim — eslab qolmasdan davom etamiz */
-    }
-  }, [mode])
-
-  useEffect(() => {
-    if (mode !== 'system') return
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const onChange = () => document.documentElement.classList.toggle('dark', media.matches)
-    media.addEventListener('change', onChange)
-    return () => media.removeEventListener('change', onChange)
-  }, [mode])
+  const [mode, setMode] = useColorMode()
 
   return (
     <div className="bg-surface-2 border-line flex items-center gap-0.5 rounded-md border p-[3px]">

@@ -35,6 +35,17 @@
           }
         }
       } catch {}
+      /* Mavzu (Sozlamalar → Mavzu, src/lib/appearance.js) — birinchi chizishdanoq */
+      try {
+        const css = localStorage.getItem('appearance-css')
+        if (css) {
+          const style = document.createElement('style')
+          style.id = 'appearance'
+          style.textContent = css
+          document.head.appendChild(style)
+          document.documentElement.setAttribute('data-appearance', '')
+        }
+      } catch {}
     </script>
   </head>
   <body>

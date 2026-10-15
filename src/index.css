@@ -55,6 +55,18 @@
   font-display: block;
 }
 
+/* Hadislar arabchasi — KFGQPC Uthmanic Hafs (Madina mushafi xati) */
+@font-face {
+  font-family: 'KFGQPC Hafs';
+  src: url('/fonts/uthmanic-hafs/UthmanicHafs1Ver18.woff2') format('woff2');
+  font-display: swap;
+  /* Arabcha vergul, nuqtali vergul va so'roq belgisi (U+060C, U+061B, U+061F) bu shriftda
+     Qur'on oyat ornamenti sifatida chizilgan — ular zaxira shriftdan olinadi */
+  unicode-range:
+    U+0020, U+0030-0039, U+005B, U+005D, U+0600-060B, U+060D-061A, U+061C-061E, U+0620-06FF,
+    U+25CC;
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -171,6 +183,14 @@
 
 @utility arabic {
   font-family: var(--font-arabic);
+  direction: rtl;
+  text-align: right;
+  line-height: 2.3;
+}
+
+/* Hadis arabchasi: .arabic bilan bir xil, faqat shrifti KFGQPC Hafs */
+@utility arabic-hadith {
+  font-family: 'KFGQPC Hafs', var(--font-arabic);
   direction: rtl;
   text-align: right;
   line-height: 2.3;

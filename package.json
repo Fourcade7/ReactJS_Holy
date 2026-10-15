@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "hadith:fetch": "node scripts/hadith/fetch-raw.mjs",
+    "hadith:build": "node scripts/hadith/build-data.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

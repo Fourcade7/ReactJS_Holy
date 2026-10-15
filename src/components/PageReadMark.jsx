@@ -1,15 +1,12 @@
 import { formatReadAt, toggleXatmPage, useXatm } from '../lib/xatm.js'
 
-/* Betni o'qib bo'lgach shu yerning o'zida «o'qildi» deb belgilash */
-export default function PageReadMark({ pageNumber }) {
-  const xatm = useXatm()
-  const readAt = xatm[pageNumber]
-
+/* «O'qildi» tugmasi — mushaf betida ham, hadisda ham bir xil */
+export function ReadMarkButton({ readAt, onToggle }) {
   return (
     <div className="mt-5 flex flex-col items-center gap-1.5">
       <button
         type="button"
-        onClick={() => toggleXatmPage(pageNumber)}
+        onClick={onToggle}
         aria-pressed={Boolean(readAt)}
         className={`inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-[13px] font-semibold transition-colors ${
           readAt
@@ -43,4 +40,10 @@ export default function PageReadMark({ pageNumber }) {
       ) : null}
     </div>
   )
+}
+
+/* Betni o'qib bo'lgach shu yerning o'zida «o'qildi» deb belgilash */
+export default function PageReadMark({ pageNumber }) {
+  const xatm = useXatm()
+  return <ReadMarkButton readAt={xatm[pageNumber]} onToggle={() => toggleXatmPage(pageNumber)} />
 }

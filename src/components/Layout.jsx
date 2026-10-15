@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { readingWidth } from '../lib/display.js'
 import { useReadingTracker } from '../lib/readingTime.js'
+import { SETTINGS_PATH, useRememberReturnPoint } from '../lib/returnPoint.js'
+import { isSection } from '../lib/sections.js'
 import ContinueReading from './ContinueReading.jsx'
 import QuranNav from './QuranNav.jsx'
 import ReadingTimeBadge from './ReadingTimeBadge.jsx'
@@ -13,11 +15,23 @@ import XatmProgress from './XatmProgress.jsx'
 export default function Layout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const location = useLocation()
-  const isReading = /^\/(surah|page|juz)\/\d+/.test(location.pathname)
-  /* Ro'yxatlar kengroq: Sahifalar keng ekranda 10 ustun, bosh sahifada sura nomlari to'liq sig'ishi uchun */
-  const listWidth = { '/pages': '80rem', '/': '72rem' }[location.pathname]
+  /* /surah/2, /page/5, /juz/1 va sura ichidan ochilgan bet /surah/2/page/5 — lekin sura betlari
+     ro'yxati (/surah/2/pages) o'qish emas */
+  const isReading = /^\/(surah|page|juz)\/\d+(\/page\/\d+)?$/.test(location.pathname)
+  const isSurahPages = /^\/surah\/\d+\/pages$/.test(location.pathname)
+  /* Kitob ichidagi sahifalar (/book/...) — hadis sahifasida arabcha va o'zbekcha yonma-yon turadi */
+  const isHadithBook = location.pathname.startsWith('/book/')
+  /* Sidebar bo'limlari va Sozlamalar Suralar bilan bir xil kenglikda; sura betlari ro'yxati
+     keng ekranda 10 ustun */
+  const listWidth = isSurahPages
+    ? '80rem'
+    : isSection(location.pathname) || location.pathname === SETTINGS_PATH || isHadithBook
+      ? '72rem'
+      : undefined
   /* O'qish vaqti faqat sura / sahifa / juz o'qish sahifalarida hisoblanadi */
   useReadingTracker(isReading)
+  /* Sozlamalardagi «Orqaga» shu yerda eslab qolingan oxirgi sahifaga qaytaradi */
+  useRememberReturnPoint(location)
 
   useEffect(() => {
     setDrawerOpen(false)

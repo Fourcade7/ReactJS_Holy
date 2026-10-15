@@ -22,7 +22,7 @@ import {
 } from '../components/ViewToggle.jsx'
 import { usePref } from '../lib/reading.js'
 import { useReminders } from '../lib/reminders.js'
-import { surahXatmStatus, toggleXatmSurah, useXatm } from '../lib/xatm.js'
+import { surahPageRange, surahXatmStatus, toggleXatmSurah, useXatm } from '../lib/xatm.js'
 
 /**
  * Sura qidiruvi ustidagi tablar. Birinchisi — tasodifiy eslatma; qolganlari doimiy
@@ -127,7 +127,30 @@ function SurahGlyph({ surah, className }) {
   )
 }
 
-/** Jadval uslubidagi suralar ro'yxati: raqam · nom va ma'nosi · arabcha nomi va oyatlar soni · belgi */
+/* Sura mushafning qaysi betlarida: oralig'i («2–49») ustida, betlar soni («48 bet») ostida.
+   Oyatlar soni yonida turadi — pastki qatori u bilan bir chiziqda */
+function SurahPages({ surah, className }) {
+  const range = surahPageRange(surah.number)
+  if (!range) return null
+  const [from, to] = range
+  const total = to - from + 1
+
+  return (
+    <span
+      className={cn('text-ink-faint block text-right text-[11px] leading-[14px] tabular-nums', className)}
+      title={
+        from === to
+          ? `Mushafning ${from}-sahifasida`
+          : `Mushafning ${from}–${to}-sahifalarida (${total} bet)`
+      }
+    >
+      <span className="block">{from === to ? from : `${from}–${to}`}</span>
+      <span className="block">{total} bet</span>
+    </span>
+  )
+}
+
+/** Jadval uslubidagi suralar ro'yxati: raqam · nom va ma'nosi · betlar · arabcha nomi va oyatlar soni · belgi */
 function SurahList({ surahs, xatm }) {
   return (
     <div className={LIST_BOX}>
@@ -137,7 +160,7 @@ function SurahList({ surahs, xatm }) {
         return (
           <Link
             key={surah.id}
-            to={`/surah/${surah.number}`}
+            to={`/surah/${surah.number}/pages`}
             className={cn(
               rowClass(index),
               'grid grid-cols-[2.5rem_minmax(0,1fr)_auto_1.5rem] items-center gap-3 px-4 py-2.5',
@@ -161,10 +184,13 @@ function SurahList({ surahs, xatm }) {
               ) : null}
             </span>
 
-            <span className="text-right">
-              <SurahGlyph surah={surah} className="text-[26px] leading-[21px]" />
-              <span className="text-ink-faint mt-1 block text-xs">
-                {surah.totalAyahs || surah.savedAyahs} oyat
+            <span className="flex items-end gap-3">
+              <SurahPages surah={surah} className="mb-px" />
+              <span className="text-right">
+                <SurahGlyph surah={surah} className="text-[26px] leading-[21px]" />
+                <span className="text-ink-faint mt-1 block text-xs">
+                  {surah.totalAyahs || surah.savedAyahs} oyat
+                </span>
               </span>
             </span>
 
@@ -301,7 +327,7 @@ export default function SurahListPage() {
             return (
               <Link
                 key={surah.id}
-                to={`/surah/${surah.number}`}
+                to={`/surah/${surah.number}/pages`}
                 className="animate-rise"
                 style={{ animationDelay: `${Math.min(index, 12) * 25}ms` }}
               >
@@ -326,11 +352,14 @@ export default function SurahListPage() {
                     ) : null}
                   </div>
 
-                  <div className="flex-none pr-4 text-right">
-                    <SurahGlyph surah={surah} className="text-[28px] leading-[22.5px]" />
-                    <p className="text-ink-faint mt-1 text-[13px]">
-                      {surah.totalAyahs || surah.savedAyahs} oyat
-                    </p>
+                  <div className="flex flex-none items-end gap-3 pr-4">
+                    <SurahPages surah={surah} className="mb-0.5" />
+                    <div className="text-right">
+                      <SurahGlyph surah={surah} className="text-[28px] leading-[22.5px]" />
+                      <p className="text-ink-faint mt-1 text-[13px]">
+                        {surah.totalAyahs || surah.savedAyahs} oyat
+                      </p>
+                    </div>
                   </div>
                 </Card>
               </Link>

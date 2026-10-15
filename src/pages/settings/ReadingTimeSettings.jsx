@@ -9,7 +9,6 @@ import {
 import { useXatm } from '../../lib/xatm.js'
 
 const MINUTE = 60_000
-const DAY = 86_400_000
 const MONTHS = [
   'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
   'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr',
@@ -32,8 +31,6 @@ const GAP = 2
 const STEP = CELL + GAP
 const LABEL_COLUMN = 28
 
-const pad = (n) => String(n).padStart(2, '0')
-
 function startOfDay(time) {
   const date = new Date(time)
   date.setHours(0, 0, 0, 0)
@@ -46,21 +43,11 @@ function addDays(date, days) {
   return next
 }
 
-function parseKey(key) {
-  const [year, month, day] = key.split('-').map(Number)
-  return new Date(year, month - 1, day)
-}
-
 const weekdayIndex = (date) => (date.getDay() + 6) % 7
 
 /** 5-oktabr 2026, yakshanba */
 function longDate(date) {
   return `${date.getDate()}-${MONTHS[date.getMonth()]} ${date.getFullYear()}, ${WEEKDAYS[weekdayIndex(date)]}`
-}
-
-/** 05.10.2026 */
-function shortDate(date) {
-  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`
 }
 
 function levelOf(ms) {
@@ -73,102 +60,16 @@ function durationLabel(ms) {
   return ms > 0 && ms < MINUTE ? '1 daqiqadan kam' : formatDuration(ms)
 }
 
-function sumSince(entries, fromKey) {
-  return entries.reduce((sum, [key, ms]) => (key >= fromKey ? sum + ms : sum), 0)
-}
-
-/** Umumiy ko'rsatkichlar: hafta, oy, jami, o'rtacha, eng ko'p kun, ketma-ket kunlar */
-function readingStats(totals, today) {
-  const entries = Object.entries(totals).filter(([, ms]) => ms > 0)
-  const total = entries.reduce((sum, [, ms]) => sum + ms, 0)
-  const keys = entries.map(([key]) => key).sort()
-  const firstKey = keys[0]
-  const daysSinceFirst = firstKey ? Math.round((today - parseKey(firstKey)) / DAY) + 1 : 0
-  const best = entries.reduce((top, entry) => (!top || entry[1] > top[1] ? entry : top), null)
-
-  /* Ketma-ket kunlar — kamida 1 daqiqa o'qilgan kunlar; bugun hali o'qilmagan bo'lsa, kechadan sanaladi */
-  const readDays = new Set(entries.filter(([, ms]) => ms >= MINUTE).map(([key]) => key))
-  let cursor = readDays.has(dayKey(today)) ? today : addDays(today, -1)
-  let current = 0
-  while (readDays.has(dayKey(cursor))) {
-    current += 1
-    cursor = addDays(cursor, -1)
-  }
-  let longest = 0
-  let run = 0
-  let previous = null
-  for (const key of [...readDays].sort()) {
-    run = previous && dayKey(addDays(parseKey(key), -1)) === previous ? run + 1 : 1
-    longest = Math.max(longest, run)
-    previous = key
-  }
-
+/** Tozalashni tasdiqlash uchun: jami vaqt va kamida 1 daqiqa o'qilgan kunlar soni */
+function readingSummary(totals) {
+  const values = Object.values(totals)
   return {
-    today: totals[dayKey(today)] ?? 0,
-    week: sumSince(entries, dayKey(addDays(today, -weekdayIndex(today)))),
-    month: sumSince(entries, dayKey(new Date(today.getFullYear(), today.getMonth(), 1))),
-    total,
-    average: daysSinceFirst ? total / daysSinceFirst : 0,
-    best,
-    readDays: readDays.size,
-    current,
-    longest,
+    total: values.reduce((sum, ms) => (ms > 0 ? sum + ms : sum), 0),
+    readDays: values.filter((ms) => ms >= MINUTE).length,
   }
 }
 
-function StatTile({ label, value, hint }) {
-  return (
-    <div className="bg-surface-2 rounded-md px-3.5 py-3" title={hint}>
-      <p className="text-ink-faint text-xs">{label}</p>
-      <p className="text-ink mt-1 text-base font-bold tabular-nums">{value}</p>
-    </div>
-  )
-}
-
-function TodayCard({ stats, today }) {
-  return (
-    <Card className="p-6">
-      <SectionTitle>Bugun</SectionTitle>
-      <p className="text-ink mt-3 text-4xl font-extrabold tracking-tight tabular-nums">
-        {formatDuration(stats.today)}
-      </p>
-      <p className="text-ink-faint mt-1 text-sm">{longDate(today)}</p>
-
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile label="Shu hafta" value={formatDuration(stats.week)} hint="Dushanbadan bugungacha" />
-        <StatTile label="Shu oy" value={formatDuration(stats.month)} />
-        <StatTile label="Jami" value={formatDuration(stats.total)} />
-        <StatTile
-          label="Kunlik oʻrtacha"
-          value={formatDuration(stats.average)}
-          hint="Birinchi yozilgan kundan bugungacha, oʻqilmagan kunlar ham hisobga olingan"
-        />
-      </div>
-
-      <p className="text-ink-faint mt-4 flex flex-wrap gap-x-2.5 gap-y-1 text-sm">
-        <span>
-          Ketma-ket: <span className="text-ink font-semibold">{stats.current} kun</span>
-        </span>
-        <span className="text-line">|</span>
-        <span>
-          Eng uzun: <span className="text-ink font-semibold">{stats.longest} kun</span>
-        </span>
-        {stats.best ? (
-          <>
-            <span className="text-line">|</span>
-            <span>
-              Eng koʻp oʻqilgan kun:{' '}
-              <span className="text-ink font-semibold">{formatDuration(stats.best[1])}</span> ·{' '}
-              {shortDate(parseKey(stats.best[0]))}
-            </span>
-          </>
-        ) : null}
-      </p>
-    </Card>
-  )
-}
-
-/* Kalendar va diagramma uchun umumiy tooltip: avval qiymat, keyin sana */
+/* Kalendar katagi tooltip'i: avval qiymat, keyin sana */
 function Tooltip({ x, y, align = 'center', children }) {
   const shift = align === 'start' ? '0%' : align === 'end' ? '-100%' : '-50%'
   return (
@@ -350,174 +251,12 @@ function ReadingCalendar({ totals, marksByDay, today }) {
   )
 }
 
-/* Y o'qi uchun "toza" qadam: 4 tadan ko'p chiziq bo'lmasin */
-const TICK_STEPS = [5, 10, 15, 30, 60, 120, 180, 240, 360, 480, 720]
-
-function tickLabel(minutes) {
-  return minutes === 0 ? '0' : formatDuration(minutes * MINUTE, { short: true })
-}
-
-/** Shu oy (1-kundan oxirgi kungacha) — har bir ustun bir kun */
-function MonthChart({ totals, today }) {
-  const [hover, setHover] = useState(null)
-  const HEIGHT = 160
-  const year = today.getFullYear()
-  const month = today.getMonth()
-  const days = Array.from({ length: new Date(year, month + 1, 0).getDate() }, (_, index) => {
-    const date = new Date(year, month, index + 1)
-    const key = dayKey(date)
-    return { date, key, ms: totals[key] ?? 0, future: date > today }
-  })
-  const maxMinutes = Math.max(...days.map((day) => day.ms)) / MINUTE
-  const step = TICK_STEPS.find((value) => maxMinutes / value <= 4) ?? TICK_STEPS.at(-1)
-  const top = Math.max(step, Math.ceil(maxMinutes / step) * step)
-  const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, index) => index * step)
-  const peak = days.reduce((best, day, index) => (day.ms > (days[best]?.ms ?? 0) ? index : best), -1)
-  const barHeight = (ms) => (ms >= MINUTE ? Math.max(2, (ms / MINUTE / top) * HEIGHT) : 0)
-
-  return (
-    <Card className="p-6">
-      <SectionTitle>Shu oy</SectionTitle>
-
-      {maxMinutes < 1 ? (
-        <p className="text-ink-faint mt-3 text-sm">
-          Bu oyda hali oʻqish vaqti yozilmagan.
-        </p>
-      ) : (
-        <div className="mt-7 flex">
-          <div className="relative w-16 flex-none" style={{ height: HEIGHT }}>
-            {ticks.map((value) => (
-              <span
-                key={value}
-                className="text-ink-faint absolute right-2.5 text-[10px] whitespace-nowrap tabular-nums"
-                style={{ bottom: (value / top) * HEIGHT, transform: 'translateY(50%)' }}
-              >
-                {tickLabel(value)}
-              </span>
-            ))}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="relative" style={{ height: HEIGHT }} onMouseLeave={() => setHover(null)}>
-              {ticks.map((value) => (
-                <span
-                  key={value}
-                  className="bg-line absolute inset-x-0 h-px"
-                  style={{ bottom: (value / top) * HEIGHT }}
-                />
-              ))}
-
-              <div className="absolute inset-0 flex">
-                {days.map((day, index) => (
-                  <div
-                    key={day.key}
-                    onMouseEnter={day.future ? undefined : () => setHover(index)}
-                    className={cn(
-                      'relative flex h-full flex-1 items-end justify-center rounded-t-[4px] transition-colors',
-                      hover === index ? 'bg-surface-2/70' : '',
-                    )}
-                  >
-                    {index === peak ? (
-                      <span
-                        className="text-ink-soft absolute text-[10px] font-semibold whitespace-nowrap tabular-nums"
-                        style={{ bottom: barHeight(day.ms) + 4 }}
-                      >
-                        {formatDuration(day.ms, { short: true })}
-                      </span>
-                    ) : null}
-                    <span
-                      className={cn(
-                        'mx-[3px] block w-full max-w-[18px] rounded-t-[4px] transition-colors',
-                        hover === index ? 'bg-emerald-400' : 'bg-emerald-500',
-                      )}
-                      style={{ height: barHeight(day.ms) }}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {hover !== null ? (
-                <Tooltip
-                  x={`${((hover + 0.5) / days.length) * 100}%`}
-                  y={HEIGHT - barHeight(days[hover].ms) - (hover === peak ? 16 : 0)}
-                  align={hover < 3 ? 'start' : hover > days.length - 4 ? 'end' : 'center'}
-                >
-                  <span className="block font-bold">
-                    {days[hover].ms > 0 ? durationLabel(days[hover].ms) : 'Oʻqilmagan'}
-                  </span>
-                  <span className="block opacity-75">{longDate(days[hover].date)}</span>
-                </Tooltip>
-              ) : null}
-            </div>
-
-            <div className="text-ink-faint relative mt-2 h-4 text-[10px] tabular-nums">
-              {days.map((day, index) =>
-                index % 7 === 0 ? (
-                  <span
-                    key={day.key}
-                    className="absolute -translate-x-1/2 whitespace-nowrap"
-                    style={{ left: `${((index + 0.5) / days.length) * 100}%` }}
-                  >
-                    {`${pad(day.date.getDate())}.${pad(day.date.getMonth() + 1)}`}
-                  </span>
-                ) : null,
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </Card>
-  )
-}
-
-/** Kunlar ro'yxati — so'nggi 7 kun, eng yangisi tepada; yangi kun qo'shilganda eng eskisi tushib qoladi */
-function DayList({ totals, today }) {
-  const fromKey = dayKey(addDays(today, -6))
-  const rows = Object.entries(totals)
-    .filter(([key, ms]) => ms > 0 && key >= fromKey)
-    .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-  const max = rows.reduce((top, [, ms]) => Math.max(top, ms), 0)
-
-  return (
-    <Card className="p-6">
-      <SectionTitle>Kunlar</SectionTitle>
-
-      {rows.length === 0 ? (
-        <p className="text-ink-faint mt-3 text-sm">Soʻnggi 7 kunda hali oʻqish vaqti yozilmagan.</p>
-      ) : (
-        <>
-          <ul className="divide-line mt-3 divide-y">
-            {rows.map(([key, ms]) => {
-              const date = parseKey(key)
-              return (
-                <li key={key} className="flex items-center gap-3 py-2 text-sm">
-                  <span className="text-ink w-24 flex-none font-semibold tabular-nums">{shortDate(date)}</span>
-                  <span className="text-ink-faint w-24 flex-none">{WEEKDAYS[weekdayIndex(date)]}</span>
-                  <span className="bg-surface-2 hidden h-1.5 flex-1 overflow-hidden rounded-full sm:block">
-                    <span
-                      className="block h-full rounded-full bg-emerald-500"
-                      style={{ width: `${(ms / max) * 100}%` }}
-                    />
-                  </span>
-                  <span className="text-ink ml-auto w-36 flex-none text-right font-semibold tabular-nums">
-                    {durationLabel(ms)}
-                  </span>
-                </li>
-              )
-            })}
-          </ul>
-        </>
-      )}
-    </Card>
-  )
-}
-
 export default function ReadingTimeSettings() {
   const totals = useReadingTime()
   const xatm = useXatm()
   const [confirming, setConfirming] = useState(false)
   const [today] = useState(() => startOfDay(Date.now()))
-  const stats = readingStats(totals, today)
+  const stats = readingSummary(totals)
 
   /* Kalendar tooltip'i uchun: o'sha kuni nechta bet «o'qildi» deb belgilangan */
   const marksByDay = useMemo(() => {
@@ -536,10 +275,7 @@ export default function ReadingTimeSettings() {
 
   return (
     <div className="space-y-5">
-      <TodayCard stats={stats} today={today} />
       <ReadingCalendar totals={totals} marksByDay={marksByDay} today={today} />
-      <MonthChart totals={totals} today={today} />
-      <DayList totals={totals} today={today} />
 
       <Card className="p-6">
         <SectionTitle>Oʻqish vaqtini tozalash</SectionTitle>

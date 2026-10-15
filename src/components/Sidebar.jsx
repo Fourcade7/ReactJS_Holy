@@ -51,6 +51,21 @@ const GROUPS = [
     ],
   },
   {
+    title: 'Hadislar',
+    items: [
+      {
+        to: '/books',
+        match: (path) => path === '/books' || path.startsWith('/book/'),
+        label: 'Kitoblar',
+        icon: (
+          <svg {...ICON}>
+            <path d="M4 4v16M8 8v12M12 6v14M16 6l4 14" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
     title: "Lug'at",
     items: [
       {

@@ -1,0 +1,66 @@
+{
+  "1": { "textUz": "Xabar eshitish koʻrishdek emas." },
+  "2": { "textUz": "Urush — hiyla-nayrangdir." },
+  "3": { "textUz": "Musulmon musulmonning oynasidir." },
+  "4": { "textUz": "Maslahat soʻralgan kishi — omonatdordir." },
+  "5": { "textUz": "Yaxshilikka yoʻl koʻrsatuvchi uni qilgan kishi kabidir." },
+  "6": { "textUz": "Hojatlaringizga erishishda sir saqlash bilan yordam soʻranglar." },
+  "7": { "textUz": "Hatto xurmoning yarmi bilan boʻlsa ham, doʻzaxdan saqlaninglar." },
+  "8": { "textUz": "Dunyo moʻminning zindoni va kofirning jannatidir." },
+  "9": { "textUz": "Hayo — butunlay xayrdir." },
+  "10": {
+    "textUz": "Moʻminning va'dasi qoʻlni ushlab olish kabidir.",
+    "arabicFix": "عِدَةُ الْمُؤْمِنِ كَأَخْذِ الْكَفِّ"
+  },
+  "11": {
+    "textUz": "Moʻmin kishiga birodarini uch kundan ortiq tark etib (gaplashmay) yurishi halol emas.",
+    "arabicFix": "لَا يَحِلُّ لِمُؤْمِنٍ أَنْ يَهْجُرَ أَخَاهُ فَوْقَ ثَلَاثَةِ أَيَّامٍ"
+  },
+  "12": { "textUz": "Bizni aldagan kishi bizdan emas." },
+  "13": { "textUz": "Oz boʻlsa-da yetadigan narsa, koʻp boʻlib gʻaflatga soladigan narsadan yaxshiroqdir." },
+  "14": { "textUz": "Hadyasini qaytarib olgan kishi oʻz qusugiga qaytgan kishiga oʻxshaydi." },
+  "15": { "textUz": "Balo (musibat) gapga bogʻliqdir — gap tufayli keladi." },
+  "16": { "textUz": "Odamlar taroq tishlari kabidir." },
+  "17": { "textUz": "Boylik — nafsning boyligidir." },
+  "18": { "textUz": "Baxtli kishi — boshqalar (ahvoli) bilan pand-nasihat olgan kishidir." },
+  "19": {
+    "textUz": "Albatta, she'rda hikmat bor va bayonda (nutqda) albatta sehr bor.",
+    "arabicFix": "وَإِنَّ مِنَ الشِّعْرِ لَحِكْمَةً وَإِنَّ مِنَ الْبَيَانِ لَسِحْرًا"
+  },
+  "20": { "textUz": "Podshohlarning afvi mulkni saqlab qolishdir." },
+  "21": { "textUz": "Kishi oʻzi sevgan kishi bilan birgadir." },
+  "22": { "textUz": "Oʻz qadrini bilgan kishi halok boʻlmaydi." },
+  "23": { "textUz": "Farzand toʻshak egasiga tegishli, zinokorga esa tosh." },
+  "24": { "textUz": "Yuqori qoʻl (beruvchi) pastki qoʻldan (oluvchidan) yaxshiroqdir." },
+  "25": { "textUz": "Odamlarga shukr qilmagan kishi Allohga ham shukr qilmagan boʻladi." },
+  "26": { "textUz": "Biror narsani sevishing (seni) koʻr va kar qiladi." },
+  "27": {
+    "textUz": "Qalblar oʻziga yaxshilik qilgan kishini sevishga va oʻziga yomonlik qilgan kishini yomon koʻrishga moyil qilib yaratilgan.",
+    "arabicFix": "جُبِلَتِ الْقُلُوبُ عَلَى حُبِّ مَنْ أَحْسَنَ إِلَيْهَا وَبُغْضِ مَنْ أَسَاءَ إِلَيْهَا"
+  },
+  "28": { "textUz": "Gunohdan tavba qilgan kishi xuddi gunohi yoʻq kishi kabidir." },
+  "29": { "textUz": "Hozir boʻlgan kishi gʻoyib boʻlgan koʻrmaydigan narsani koʻradi." },
+  "30": {
+    "textUz": "Agar sizlarga bir qavmning karim (hurmatli) kishisi kelsa, uni izzat qilinglar.",
+    "arabicFix": "إِذَا جَاءَكُمْ كَرِيمُ قَوْمٍ فَأَكْرِمُوهُ"
+  },
+  "31": { "textUz": "Yolgʻon qasam diyorlarni huvillatib yuboradi." },
+  "32": { "textUz": "Kim oʻz molini himoya qilib oʻldirilsa, u shahiddir." },
+  "33": {
+    "textUz": "Amallar niyatga koʻradir.",
+    "arabicFix": "الْأَعْمَالُ بِالنِّيَّةِ"
+  },
+  "34": { "textUz": "Qavmning sayyidi (boshligʻi) ularning xizmatkoridir." },
+  "35": { "textUz": "Ishlarning eng yaxshisi — oʻrtachasidir." },
+  "36": { "textUz": "Allohim, ummatimga payshanba kuni erta (tong) vaqtida baraka ber." },
+  "37": { "textUz": "Kambagʻallik kufrga aylanishiga oz qoladi." },
+  "38": { "textUz": "Safar azobning bir boʻlagidir." },
+  "39": {
+    "textUz": "Eng yaxshi ozuqa (zaxira) — taqvodir.",
+    "arabicFix": "خَيْرُ الزَّادِ التَّقْوَى"
+  },
+  "40": {
+    "textUz": "Majlislar omonat bilandir (u yerda aytilgan gaplar omonatdir).",
+    "arabicFix": "الْمَجَالِسُ بِالْأَمَانَةِ"
+  }
+}
