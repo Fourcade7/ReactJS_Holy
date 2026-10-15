@@ -1,7 +1,9 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useId, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toArabicNumber } from '../lib/reading.js'
-import AyahReminderButton from './AyahReminderButton.jsx'
+import { useReminders } from '../lib/reminders.js'
+import { useAyahTafsir } from '../lib/tafsir.js'
+import AyahPanel from './AyahPanel.jsx'
 import MushafAyah from './MushafAyah.jsx'
 import { Badge, cn } from './Ui.jsx'
 
@@ -36,11 +38,12 @@ export function AyahMarker({ number }) {
   )
 }
 
-function HoverSpan({ hoverKey, className, children }) {
+function HoverSpan({ hoverKey, className, children, ...rest }) {
   const { active, onMouseEnter, onMouseLeave } = useAyahHoverByKey(hoverKey)
 
   return (
     <span
+      {...rest}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className={cn(
@@ -84,44 +87,121 @@ export function MushafText({ ayahs, surahNumber, className }) {
   )
 }
 
-/* Sahifa tarjimasi: raqamlar matn ichida qalin holda; raqam chapida (hover'da) — eslatmaga saqlash */
+/* Bosiladigan oyat tarjimasi — ostidagi panelni ochadi */
+const AYAH_TRIGGER =
+  'cursor-pointer focus-visible:outline-accent focus-visible:outline-2 focus-visible:outline-offset-2'
+
+/**
+ * Oyat tarjimasi bosilganda ostidagi panel (eslatma, tafsir) ochiladi/yopiladi — klaviaturadan ham.
+ * Matn sichqoncha bilan belgilanayotgan bo'lsa (nusxa olish uchun) panelga tegilmaydi.
+ */
+function useAyahPanel() {
+  const [open, setOpen] = useState(false)
+  const panelId = useId()
+
+  function toggle() {
+    setOpen((value) => !value)
+  }
+
+  return {
+    open,
+    panelId,
+    toggle,
+    triggerProps: {
+      role: 'button',
+      tabIndex: 0,
+      'aria-expanded': open,
+      'aria-controls': panelId,
+      onClick: () => {
+        if (!window.getSelection()?.toString()) toggle()
+      },
+      onKeyDown: (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return
+        event.preventDefault()
+        toggle()
+      },
+    },
+  }
+}
+
+/* Eslatmalarga saqlangan oyat ("2:255") — tarjimasi dastur rangida turadi */
+function useAyahSaved(surahNumber, ayahNumber) {
+  const source = `${surahNumber}:${ayahNumber}`
+  return useReminders().some((item) => item.source === source)
+}
+
+/**
+ * Sahifa tarjimasi: raqamlar matn ichida qalin holda. Dastur rangida: tafsiri bor oyatning
+ * raqami, eslatmalarga saqlangan oyatning matni. Oyat bosilsa, panel shu oyatdan keyin ochiladi.
+ */
 export function TranslationFlow({ ayahs, surahNumber, className }) {
   return (
-    <p className={cn('txt-uz text-ink-soft leading-[2]', className)}>
+    <div className={cn('txt-uz text-ink-soft leading-[2]', className)}>
       {ayahs.map((ayah) => (
-        <HoverSpan
+        <FlowAyah
           key={ayah.id}
-          hoverKey={verseKeyOf(ayah, surahNumber)}
-          className="group/ayah hover:text-accent px-1.5 py-0.5"
-        >
-          <span className="relative">
-            {ayah.translationUz ? (
-              <AyahReminderButton
-                surahNumber={ayah.surah?.number ?? surahNumber ?? ayah.surahId}
-                ayahNumber={ayah.numberInSurah}
-                text={ayah.translationUz}
-                className="top-1/2 -translate-y-1/2"
-              />
-            ) : null}
-            <b className="text-ink">{ayah.numberInSurah}.</b>
-          </span>{' '}
-          {ayah.translationUz || (
-            <span className="text-ink-faint italic">tarjima kiritilmagan</span>
-          )}{' '}
-        </HoverSpan>
+          ayah={ayah}
+          surahNumber={ayah.surah?.number ?? surahNumber ?? ayah.surahId}
+        />
       ))}
-    </p>
+    </div>
+  )
+}
+
+function FlowAyah({ ayah, surahNumber }) {
+  const { open, panelId, triggerProps } = useAyahPanel()
+  const tafsir = useAyahTafsir(surahNumber, ayah.numberInSurah)
+  const saved = useAyahSaved(surahNumber, ayah.numberInSurah)
+  const hasText = Boolean(ayah.translationUz)
+
+  return (
+    <>
+      <HoverSpan
+        hoverKey={verseKeyOf(ayah, surahNumber)}
+        className={cn(
+          'hover:text-accent px-1.5 py-0.5',
+          hasText && AYAH_TRIGGER,
+          saved && 'text-accent',
+        )}
+        {...(hasText ? triggerProps : {})}
+      >
+        <b className={tafsir ? 'text-accent' : 'text-ink'} title={tafsir ? 'Tafsiri bor' : undefined}>
+          {ayah.numberInSurah}.
+        </b>
+        {tafsir ? <span className="sr-only">(tafsiri bor)</span> : null}
+        {saved ? <span className="sr-only">(eslatmalarda saqlangan)</span> : null}{' '}
+        {ayah.translationUz || (
+          <span className="text-ink-faint italic">tarjima kiritilmagan</span>
+        )}{' '}
+      </HoverSpan>
+      {hasText ? (
+        <AyahPanel
+          id={panelId}
+          open={open}
+          surahNumber={surahNumber}
+          ayahNumber={ayah.numberInSurah}
+          text={ayah.translationUz}
+          tafsir={tafsir}
+          className="pt-1 pb-3"
+        />
+      ) : null}
+    </>
   )
 }
 
 export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
   const showArabic = textMode !== 'translation'
   const showTranslation = textMode !== 'arabic'
+  const surahNumber = ayah.surah?.number ?? ayah.surahId
+  const { open, panelId, toggle, triggerProps } = useAyahPanel()
+  /* faqat arabcha ko'rsatilganda tafsir yuklanmaydi */
+  const tafsir = useAyahTafsir(showTranslation ? surahNumber : null, ayah.numberInSurah)
+  const saved = useAyahSaved(surahNumber, ayah.numberInSurah)
 
   return (
     <article
       id={`ayah-${ayah.numberInSurah}`}
-      className="group/ayah hover:bg-surface-2/50 scroll-mt-24 px-5 py-7 transition-colors sm:px-7"
+      className="hover:bg-surface-2/50 scroll-mt-24 px-5 py-7 transition-colors sm:px-7"
     >
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <span className="bg-surface-2 text-ink-soft flex h-7 min-w-7 items-center justify-center rounded-md px-2 text-[11px] font-bold">
@@ -140,11 +220,25 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
           </Link>
         ) : null}
         {ayah.juz ? <Badge>{ayah.juz}-juz</Badge> : null}
+        {/* tafsiri bor oyat belgisi — bosilsa, tarjimani bosgandek panel ochiladi */}
+        {tafsir ? (
+          <button
+            type="button"
+            onClick={toggle}
+            aria-expanded={open}
+            aria-controls={panelId}
+            className={cn('rounded-md', AYAH_TRIGGER)}
+          >
+            <Badge tone="accent" className="hover:bg-accent/20 transition-colors">
+              Tafsir
+            </Badge>
+          </button>
+        ) : null}
       </div>
 
       {showArabic ? (
         <MushafAyah
-          surahNumber={ayah.surah?.number ?? ayah.surahId}
+          surahNumber={surahNumber}
           ayahNumber={ayah.numberInSurah}
           pageNumber={ayah.pageNumber}
           fitToPage
@@ -162,15 +256,16 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
 
       {showTranslation ? (
         ayah.translationUz ? (
-          <p className="txt-uz text-ink-soft hover:text-accent relative mt-4 transition-colors duration-150">
-            {/* oyat ustiga kelganda tarjimaning birinchi satri chapida (matnni surmaydi) */}
-            <AyahReminderButton
-              surahNumber={ayah.surah?.number ?? ayah.surahId}
-              ayahNumber={ayah.numberInSurah}
-              text={ayah.translationUz}
-              className="mr-0.5"
-              style={{ top: 'calc(0.5lh - 8px)' }}
-            />
+          <p
+            {...triggerProps}
+            className={cn(
+              'txt-uz hover:text-accent mt-4 rounded-md transition-colors duration-150',
+              /* eslatmalarga saqlangan oyat matni dastur rangida */
+              saved ? 'text-accent' : 'text-ink-soft',
+              AYAH_TRIGGER,
+            )}
+          >
+            {saved ? <span className="sr-only">(eslatmalarda saqlangan)</span> : null}
             {ayah.translationUz}
           </p>
         ) : (
@@ -180,10 +275,16 @@ export function AyahRow({ ayah, textMode = 'both', surahLink = false }) {
         )
       ) : null}
 
-      {showTranslation && ayah.tafsirUz ? (
-        <div className="border-accent bg-surface-2 text-ink-soft txt-uz-sub mt-5 rounded-r-md border-l-[3px] px-4 py-3">
-          {ayah.tafsirUz}
-        </div>
+      {showTranslation && ayah.translationUz ? (
+        <AyahPanel
+          id={panelId}
+          open={open}
+          surahNumber={surahNumber}
+          ayahNumber={ayah.numberInSurah}
+          text={ayah.translationUz}
+          tafsir={tafsir}
+          className="pt-4"
+        />
       ) : null}
     </article>
   )

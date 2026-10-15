@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 export function cn(...parts) {
   return parts.filter(Boolean).join(' ')
 }
@@ -239,6 +241,39 @@ export function EmptyState({ icon = '۞', title, hint, action }) {
       <p className="text-ink font-semibold">{title}</p>
       {hint ? <p className="text-ink-faint mt-1 max-w-sm text-sm">{hint}</p> : null}
       {action ? <div className="mt-4">{action}</div> : null}
+    </div>
+  )
+}
+
+/* index.css dagi collapse-close davomiyligi bilan bir xil */
+const COLLAPSE_CLOSE_MS = 200
+
+/**
+ * Ochiladigan blok: balandligi silliq o'zgaradi (grid qatori 0fr ↔ 1fr).
+ * Yopilgach DOMdan olib tashlanadi — matn oqimi ichida ham bo'sh joy qoldirmaydi.
+ * Oraliq (padding) bolasida bo'lsin: shunda u ham animatsiya bilan ochiladi.
+ */
+export function Collapse({ open, id, children }) {
+  const [mounted, setMounted] = useState(open)
+  /* ochilganda shu renderning o'zida DOMga qo'shiladi; yopilganda animatsiya tugashini kutamiz */
+  if (open && !mounted) setMounted(true)
+
+  useEffect(() => {
+    if (open || !mounted) return
+    const timer = setTimeout(() => setMounted(false), COLLAPSE_CLOSE_MS)
+    return () => clearTimeout(timer)
+  }, [open, mounted])
+
+  if (!mounted) return null
+  return (
+    <div
+      id={id}
+      className={cn(
+        'grid motion-reduce:animate-none',
+        open ? 'animate-collapse-open' : 'animate-collapse-close',
+      )}
+    >
+      <div className="min-h-0 overflow-hidden">{children}</div>
     </div>
   )
 }

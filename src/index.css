@@ -25,6 +25,8 @@
 
   --animate-rise: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade: fade 0.25s ease-out both;
+  --animate-collapse-open: collapse-open 0.2s ease-out both;
+  --animate-collapse-close: collapse-close 0.2s ease-in both;
 }
 
 /* O'qish matni o'lchamlari — Sozlamalar bo'limidan boshqariladi (1 = standart) */
@@ -70,6 +72,29 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Collapse: balandlik grid qatori orqali o'zgaradi (0fr — yopiq, 1fr — to'liq) */
+@keyframes collapse-open {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+@keyframes collapse-close {
+  from {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
   }
 }
 

@@ -42,6 +42,11 @@ export const mushafApi = {
   page: (number) => json(`mushaf/${number}.json`),
 }
 
+export const tafsirApi = {
+  /** { "oyat raqami": "tafsir matni" } — tafsiri yo'q surada {} (scripts/fetch-tafsir.mjs) */
+  surah: (number) => json(`tafsir/${number}.json`),
+}
+
 export const wordsApi = {
   list: async ({ limit = 50, offset = 0, q } = {}) => {
     const all = await json('words.json')
