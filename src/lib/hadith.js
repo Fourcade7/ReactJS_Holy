@@ -44,9 +44,9 @@ export function sectionTitle(section) {
 
 /**
  * Natija qaysi kalitga (kitob / bo'lim) tegishli ekani saqlanadi — kalit almashganda eski
- * natija ko'rinmaydi, yuklash tugaguncha `loading` true bo'ladi.
+ * natija ko'rinmaydi, yuklash tugaguncha `loading` true bo'ladi. Kitoblar (lib/books.js) ham ishlatadi.
  */
-function useKeyed(key, load) {
+export function useKeyed(key, load) {
   const [result, setResult] = useState({ key: null })
 
   useEffect(() => {

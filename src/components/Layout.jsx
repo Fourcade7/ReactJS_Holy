@@ -15,17 +15,23 @@ import XatmProgress from './XatmProgress.jsx'
 export default function Layout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const location = useLocation()
-  /* /surah/2, /page/5, /juz/1 va sura ichidan ochilgan bet /surah/2/page/5 — lekin sura betlari
-     ro'yxati (/surah/2/pages) o'qish emas */
+  /* /surah/2, /page/5, /juz/1 va sura / juz ichidan ochilgan bet (/surah/2/page/5, /juz/1/page/5) —
+     lekin sura yoki juz betlari ro'yxati (/surah/2/pages, /juz/1/pages) o'qish emas */
   const isReading = /^\/(surah|page|juz)\/\d+(\/page\/\d+)?$/.test(location.pathname)
-  const isSurahPages = /^\/surah\/\d+\/pages$/.test(location.pathname)
+  const isPagesList = /^\/(surah|juz)\/\d+\/pages$/.test(location.pathname)
   /* Kitob ichidagi sahifalar (/book/...) — hadis sahifasida arabcha va o'zbekcha yonma-yon turadi */
   const isHadithBook = location.pathname.startsWith('/book/')
-  /* Sidebar bo'limlari va Sozlamalar Suralar bilan bir xil kenglikda; sura betlari ro'yxati
+  /* Kitob sahifasidagi hikmatlar to'ri (/library/hikam) keng; hikmat va lug'at sahifalari — faqat
+     o'zbekcha matn, odatiy o'qish kengligida */
+  const isLibraryBook = /^\/library\/[^/]+$/.test(location.pathname)
+  /* Sidebar bo'limlari va Sozlamalar Suralar bilan bir xil kenglikda; sura va juz betlari ro'yxati
      keng ekranda 10 ustun */
-  const listWidth = isSurahPages
+  const listWidth = isPagesList
     ? '80rem'
-    : isSection(location.pathname) || location.pathname === SETTINGS_PATH || isHadithBook
+    : isSection(location.pathname) ||
+        location.pathname === SETTINGS_PATH ||
+        isHadithBook ||
+        isLibraryBook
       ? '72rem'
       : undefined
   /* O'qish vaqti faqat sura / sahifa / juz o'qish sahifalarida hisoblanadi */

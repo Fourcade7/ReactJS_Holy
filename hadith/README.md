@@ -1,6 +1,6 @@
 # Hadislar — arabcha matn va o'zbekcha tarjima
 
-Sidebar'dagi **Hadislar → Kitoblar** bo'limi. Avval alohida «Sunnat» ilovasi (ReactJS_Sunnah) bo'lgan,
+Sidebar'dagi **Kutubxona → Hadislar** bo'limi (yonidagi **Kitoblar** — `/library`, `public/data/books`). Avval alohida «Sunnat» ilovasi (ReactJS_Sunnah) bo'lgan,
 endi Holy ichida. Server yo'q: ilova `public/data/hadith` ichidagi JSON fayllardan o'qiydi.
 
 ## Sahifalar

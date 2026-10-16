@@ -18,7 +18,7 @@ function JuzList({ surahNames }) {
         return (
           <Link
             key={juz}
-            to={`/juz/${juz}`}
+            to={`/juz/${juz}/pages`}
             className={cn(
               rowClass(index),
               'grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5',
@@ -91,7 +91,7 @@ export default function JuzListPage() {
           const names = [surahNames[fromSurah], surahNames[toSurah]].filter(Boolean)
 
           return (
-            <Link key={juz} to={`/juz/${juz}`}>
+            <Link key={juz} to={`/juz/${juz}/pages`}>
               <Card className="group hover:border-accent/50 flex h-full flex-col items-center justify-center gap-1 p-4 text-center transition-colors">
                 <span className="text-ink group-hover:text-accent text-xl font-extrabold transition-colors">
                   {juz}

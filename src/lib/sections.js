@@ -3,7 +3,8 @@ export const SECTIONS = {
   '/': 'Suralar',
   '/pages': 'Sahifalar',
   '/juz': 'Juzlar',
-  '/books': 'Kitoblar',
+  '/books': 'Hadislar',
+  '/library': 'Kitoblar',
   '/words': 'Qiyin soʻzlar',
 }
 

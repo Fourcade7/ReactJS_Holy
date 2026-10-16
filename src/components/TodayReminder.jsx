@@ -65,7 +65,7 @@ export default function TodayReminder({ reminders, className }) {
         )}
       >
         <p className="text-ink-faint text-[13px]">
-          Hali eslatma yoʻq — oʻzingiz tanlagan oyat yoki hikmatni qoʻshing, dastur har
+          Hali eslatma yoʻq — oʻzingiz tanlagan oyat, hadis yoki hikmatni qoʻshing, dastur har
           ochilganda ulardan biri shu yerda chiqadi.
         </p>
         <Button variant="primary" size="sm" onClick={() => navigate('/settings?tab=reminders')}>

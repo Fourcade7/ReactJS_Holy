@@ -35,6 +35,16 @@ export const JUZ_RANGES = {
   30: [78, 1, 114, 6, 582, 604, 564],
 }
 
+/* Har bir chaqiruvda bir xil massiv qaytishi uchun (useMemo bog'liqligi) oldindan tuziladi */
+const JUZ_PAGES = Object.fromEntries(
+  Object.entries(JUZ_RANGES).map(([juz, range]) => [juz, [range[4], range[5]]]),
+)
+
+/** Juz egallagan betlar: [birinchi bet, oxirgi bet], topilmasa null */
+export function juzPageRange(juzNumber) {
+  return Object.hasOwn(JUZ_PAGES, juzNumber) ? JUZ_PAGES[juzNumber] : null
+}
+
 /** Oyat qaysi juzda: (sura, oyat) → juz raqami, topilmasa null */
 export function juzOfAyah(surahNumber, ayahNumber) {
   for (const [juz, [fromSurah, fromAyah, toSurah, toAyah]] of Object.entries(JUZ_RANGES)) {

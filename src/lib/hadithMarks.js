@@ -1,52 +1,32 @@
-import { useEffect, useState } from 'react'
+import { createMarkStore } from './markStore.js'
 
 /* O'qildi deb belgilangan hadislar: { "bukhari:1": 1758300000000, … }.
    Hadis raqamlari har bir kitob ichida yagona — kalit «kitob:raqam».
    Xatm va statistikaga qo'shilmaydi — faqat belgi */
-const KEY = 'read-hadiths'
-const EVENT = 'read-hadiths-change'
+const store = createMarkStore('read-hadiths')
 
 export const hadithKey = (collectionId, number) => `${collectionId}:${number}`
-
-function readMarks() {
-  try {
-    const raw = localStorage.getItem(KEY)
-    const value = raw ? JSON.parse(raw) : null
-    return value && typeof value === 'object' && !Array.isArray(value) ? value : {}
-  } catch {
-    return {}
-  }
-}
-
-function writeMarks(value) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(value))
-  } catch {
-    /* private rejim — eslab qolmasdan davom etamiz */
-  }
-  window.dispatchEvent(new CustomEvent(EVENT, { detail: value }))
-}
 
 /** Hadisni o'qildi deb belgilaydi yoki belgini olib tashlaydi */
 export function toggleHadithRead(collectionId, number) {
   const key = hadithKey(collectionId, number)
-  const next = { ...readMarks() }
+  const next = { ...store.read() }
   if (next[key]) delete next[key]
   else next[key] = Date.now()
-  writeMarks(next)
+  store.write(next)
 }
 
 /** Bir nechta hadisni birdan belgilaydi (read=true) yoki belgisini olib tashlaydi.
     Allaqachon belgilanganlarining sanasi saqlanib qoladi */
 export function setHadithsRead(collectionId, numbers, read) {
-  const next = { ...readMarks() }
+  const next = { ...store.read() }
   const now = Date.now()
   for (const number of numbers) {
     const key = hadithKey(collectionId, number)
     if (!read) delete next[key]
     else if (!next[key]) next[key] = now
   }
-  writeMarks(next)
+  store.write(next)
 }
 
 /** Kitobda belgilangan hadis raqamlari — o'sish tartibida (bo'limlar bo'yicha sanash uchun) */
@@ -90,29 +70,9 @@ export function collectionReadStatus(marks, collection) {
   return { read, total: collection.totalHadiths, done: read >= collection.totalHadiths }
 }
 
-/** «12/148 hadis oʻqildi» yoki «✓ Oʻqildi» */
-export function readStatusLabel(status) {
-  return status.done ? '✓ Oʻqildi' : `${status.read}/${status.total} hadis oʻqildi`
+/** «12/148 hadis oʻqildi» yoki «✓ Oʻqildi». itemName — kitoblarda «hikmat» kabi */
+export function readStatusLabel(status, itemName = 'hadis') {
+  return status.done ? '✓ Oʻqildi' : `${status.read}/${status.total} ${itemName} oʻqildi`
 }
 
-export function useHadithMarks() {
-  const [value, setValue] = useState(readMarks)
-
-  useEffect(() => {
-    function onChange(event) {
-      setValue(event.detail ?? {})
-    }
-    /* boshqa oynada o'zgarsa ham yangilanadi */
-    function onStorage(event) {
-      if (event.key === KEY || event.key === null) setValue(readMarks())
-    }
-    window.addEventListener(EVENT, onChange)
-    window.addEventListener('storage', onStorage)
-    return () => {
-      window.removeEventListener(EVENT, onChange)
-      window.removeEventListener('storage', onStorage)
-    }
-  }, [])
-
-  return value
-}
+export const useHadithMarks = store.useMarks

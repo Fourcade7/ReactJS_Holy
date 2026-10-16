@@ -16,6 +16,7 @@ import {
 import { readingWidth } from '../lib/display.js'
 import { saveLastRead } from '../lib/lastRead.js'
 import { TEXT_MODES, usePref } from '../lib/reading.js'
+import { juzPageRange } from '../lib/juz.js'
 import { surahPageRange } from '../lib/xatm.js'
 
 /**
@@ -32,17 +33,35 @@ function surahForPage(surahNumber, pageNumber) {
   return surahNumber
 }
 
+/* Juzlar bo'limidan ochilgan bet (/juz/J/page/N) ham shunday: juz chegarasidan chiqilsa qo'shni juzga
+   o'tiladi. Chegaradagi bet ikki juzga tegishli bo'lsa, joriy juz ichida qolinadi */
+function juzForPage(juzNumber, pageNumber) {
+  const step = pageNumber < juzPageRange(juzNumber)[0] ? -1 : 1
+  for (let number = juzNumber; number >= 1 && number <= 30; number += step) {
+    const [from, to] = juzPageRange(number)
+    if (pageNumber >= from && pageNumber <= to) return number
+  }
+  return juzNumber
+}
+
+/* Yo'ldagi sura yoki juz raqami — bet uning ichida bo'lsagina, aks holda null */
+function contextOf(param, rangeOf, pageNumber) {
+  const range = param ? rangeOf(Number(param)) : null
+  return range && pageNumber >= range[0] && pageNumber <= range[1] ? Number(param) : null
+}
+
 export default function PageReadPage() {
-  const { surah: surahParam, number } = useParams()
+  const { surah: surahParam, juz: juzParam, number } = useParams()
   const current = Number(number)
-  /* Suralar bo'limidan kelingan bo'lsa — shu sura (bet uning ichida bo'lishi kerak), aks holda null */
-  const surahRange = surahParam ? surahPageRange(Number(surahParam)) : null
-  const contextSurah =
-    surahRange && current >= surahRange[0] && current <= surahRange[1] ? Number(surahParam) : null
+  /* Suralar yoki Juzlar bo'limidan kelingan bo'lsa — shu sura / juz, aks holda null */
+  const contextSurah = contextOf(surahParam, surahPageRange, current)
+  const contextJuz = contextOf(juzParam, juzPageRange, current)
   const pagePath = (pageNumber) =>
     contextSurah
       ? `/surah/${surahForPage(contextSurah, pageNumber)}/page/${pageNumber}`
-      : `/page/${pageNumber}`
+      : contextJuz
+        ? `/juz/${juzForPage(contextJuz, pageNumber)}/page/${pageNumber}`
+        : `/page/${pageNumber}`
   const readPath = pagePath(current)
   const [page, setPage] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -78,7 +97,9 @@ export default function PageReadPage() {
       .catch(() => setSurahNames({}))
   }, [hasContext])
 
-  if (surahParam && !contextSurah) return <Navigate to={`/page/${current}`} replace />
+  if ((surahParam && !contextSurah) || (juzParam && !contextJuz)) {
+    return <Navigate to={`/page/${current}`} replace />
+  }
 
   const showArabic = textMode !== 'translation'
   const showTranslation = textMode !== 'arabic'
@@ -113,7 +134,13 @@ export default function PageReadPage() {
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <Link
-          to={contextSurah ? `/surah/${contextSurah}/pages` : '/pages'}
+          to={
+            contextSurah
+              ? `/surah/${contextSurah}/pages`
+              : contextJuz
+                ? `/juz/${contextJuz}/pages`
+                : '/pages'
+          }
           className="text-ink-faint hover:text-accent inline-flex items-center gap-1.5 text-[13px] font-semibold transition-colors"
         >
           <svg
@@ -131,7 +158,9 @@ export default function PageReadPage() {
             ? surahNames[contextSurah]
               ? `${surahNames[contextSurah]} sahifalari`
               : 'Sura sahifalari'
-            : 'Sahifalar'}
+            : contextJuz
+              ? `${contextJuz}-juz sahifalari`
+              : 'Sahifalar'}
         </Link>
 
         <Segmented options={TEXT_MODES} value={textMode} onChange={setTextMode} />

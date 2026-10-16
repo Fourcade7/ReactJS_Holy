@@ -23,7 +23,7 @@ export default function HadithBooksPage() {
 
   return (
     <>
-      <PageHeader title="Kitoblar" subtitle="Hadis toʻplamlari — arabcha matn va oʻzbekcha tarjima">
+      <PageHeader title="Hadislar" subtitle="Hadis toʻplamlari — arabcha matn va oʻzbekcha tarjima">
         {collections ? <ViewToggle view={view} onChange={changeView} /> : null}
       </PageHeader>
       <Alert>{error}</Alert>

@@ -40,7 +40,11 @@ export function surahPageRange(surahNumber) {
  * Sahifalar, Suralar va Sozlamalar doim bir xil holatni ko'rsatadi.
  */
 export function surahXatmStatus(xatm, surahNumber) {
-  const range = surahPageRange(surahNumber)
+  return pageRangeXatmStatus(xatm, surahPageRange(surahNumber))
+}
+
+/** [birinchi bet, oxirgi bet] oralig'idagi betlarning nechtasi o'qildi deb belgilangan (juz uchun ham) */
+export function pageRangeXatmStatus(xatm, range) {
   if (!range) return null
   const [from, to] = range
   let read = 0

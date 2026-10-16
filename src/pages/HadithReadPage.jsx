@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import HadithCard from '../components/HadithCard.jsx'
+import HadithReminderButton from '../components/HadithReminderButton.jsx'
 import { ReadMarkButton } from '../components/PageReadMark.jsx'
 import { ReaderPager } from '../components/Quran.jsx'
 import { Alert, Loader, Segmented } from '../components/Ui.jsx'
@@ -95,7 +96,10 @@ export default function HadithReadPage() {
           </svg>
           <span className="truncate">{backLabel}</span>
         </Link>
-        <Segmented options={TEXT_MODES} value={textMode} onChange={setTextMode} />
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <HadithReminderButton collection={collection} hadith={hadith} />
+          <Segmented options={TEXT_MODES} value={textMode} onChange={setTextMode} />
+        </div>
       </div>
 
       <HadithCard key={hadith.number} hadith={hadith} mode={textMode} />

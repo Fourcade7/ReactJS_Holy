@@ -17,12 +17,14 @@ function labelFor(path) {
   const pathname = path.replace(/[?#].*$/, '')
   if (SECTIONS[pathname]) return SECTIONS[pathname]
   let match
-  if ((match = pathname.match(/^(?:\/surah\/\d+)?\/page\/(\d+)$/))) return `${match[1]}-sahifa`
+  if ((match = pathname.match(/^(?:\/(?:surah|juz)\/\d+)?\/page\/(\d+)$/))) return `${match[1]}-sahifa`
   if ((match = pathname.match(/^\/juz\/(\d+)$/))) return `${match[1]}-juz`
+  if ((match = pathname.match(/^\/juz\/(\d+)\/pages$/))) return `${match[1]}-juz sahifalari`
   if ((match = pathname.match(/^\/surah\/(\d+)\/pages$/))) return `${match[1]}-sura sahifalari`
   if ((match = pathname.match(/^\/surah\/(\d+)$/))) return `${match[1]}-sura`
   if ((match = pathname.match(/^\/book\/[^/]+\/s\/[^/]+\/(\d+)$/))) return `${match[1]}-hadis`
   if (pathname.startsWith('/book/')) return 'Hadislar'
+  if (pathname.startsWith('/library/')) return 'Kitoblar'
   return 'Orqaga'
 }
 

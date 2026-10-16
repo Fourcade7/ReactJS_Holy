@@ -58,8 +58,8 @@ export default function QuranNav() {
   }, [location.pathname])
 
   const currentLabel = useMemo(() => {
-    /* /page/5 yoki sura ichidan ochilgan /surah/2/page/5 */
-    const pageMatch = location.pathname.match(/^(?:\/surah\/\d+)?\/page\/(\d+)/)
+    /* /page/5 yoki sura / juz ichidan ochilgan /surah/2/page/5, /juz/1/page/5 */
+    const pageMatch = location.pathname.match(/^(?:\/(?:surah|juz)\/\d+)?\/page\/(\d+)/)
     if (pageMatch) return `${pageMatch[1]}-sahifa`
     const surahMatch = location.pathname.match(/^\/surah\/(\d+)/)
     if (surahMatch) {

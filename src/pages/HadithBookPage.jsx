@@ -7,6 +7,7 @@ import HadithReadToggle, {
   ReadStatusBadge,
   SectionReadToggle,
 } from '../components/HadithReadToggle.jsx'
+import { SavedReminderMark } from '../components/HadithReminderButton.jsx'
 import {
   Alert,
   Badge,
@@ -33,6 +34,7 @@ import {
   sectionReadStatus,
   useHadithMarks,
 } from '../lib/hadithMarks.js'
+import { hadithReminderSource, useSavedHadithSources } from '../lib/reminders.js'
 
 /* Suralar ro'yxati bilan bir xil to'r: tor ekranda 1, sm da 2, keng ekranda 3 ustun.
    grid-cols-1 shart: aks holda bir ustunli to'r uzun matn kengligiga cho'zilib, ekrandan chiqib ketadi */
@@ -115,7 +117,7 @@ function SectionTile({ collectionId, section, index, status }) {
   )
 }
 
-function HadithTile({ collectionId, sectionNumber, hadith, index, readAt }) {
+function HadithTile({ collectionId, sectionNumber, hadith, index, readAt, saved }) {
   const name = narratorName(hadith.narratorUz)
 
   return (
@@ -131,6 +133,8 @@ function HadithTile({ collectionId, sectionNumber, hadith, index, readAt }) {
         )}
       >
         <HadithReadToggle collectionId={collectionId} number={hadith.number} readAt={readAt} />
+        {/* O'qildi doirachasi ostida, o'sha ustunda */}
+        {saved ? <SavedReminderMark className="absolute top-8 right-2" /> : null}
         <Diamond className="group-hover:bg-accent/15">{hadith.number}</Diamond>
 
         <div className="min-w-0 flex-1 pr-4">
@@ -180,12 +184,13 @@ function HadithTile({ collectionId, sectionNumber, hadith, index, readAt }) {
 }
 
 /** Jadval uslubidagi hadislar ro'yxati: belgi · raqam · sarlavha · arabcha boshi */
-function HadithList({ collectionId, sectionNumber, hadiths, marks }) {
+function HadithList({ collectionId, sectionNumber, hadiths, marks, savedSources }) {
   return (
     <div className={LIST_BOX}>
       {hadiths.map((hadith, index) => {
         const name = narratorName(hadith.narratorUz)
         const readAt = marks[hadithKey(collectionId, hadith.number)]
+        const saved = savedSources.has(hadithReminderSource(collectionId, hadith.number))
         return (
           <Link
             key={hadith.number}
@@ -206,8 +211,11 @@ function HadithList({ collectionId, sectionNumber, hadiths, marks }) {
             <span className="min-w-0">
               {hadith.textUz ? (
                 <>
-                  <span className="text-ink group-hover:text-accent block truncate text-[15px] font-semibold transition-colors">
-                    {name || hadithExcerpt(hadith.textUz)}
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span className="text-ink group-hover:text-accent truncate text-[15px] font-semibold transition-colors">
+                      {name || hadithExcerpt(hadith.textUz)}
+                    </span>
+                    {saved ? <SavedReminderMark className="flex-none" /> : null}
                   </span>
                   {name ? (
                     <span className="text-ink-faint block truncate text-xs">
@@ -216,7 +224,10 @@ function HadithList({ collectionId, sectionNumber, hadiths, marks }) {
                   ) : null}
                 </>
               ) : (
-                <span className="text-ink-faint text-sm">Tarjimasiz</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-ink-faint text-sm">Tarjimasiz</span>
+                  {saved ? <SavedReminderMark className="flex-none" /> : null}
+                </span>
               )}
             </span>
             <span
@@ -307,7 +318,7 @@ function SectionGrid({ collection, sections }) {
   return (
     <>
       <Link to="/books" className={BACK_LINK}>
-        ← Kitoblar
+        ← Hadislar
       </Link>
       <HadithBookInfo collection={collection} />
 
@@ -337,6 +348,7 @@ function HadithGrid({ collection, sections, sectionNumber }) {
   const { hadiths, error, loading } = useSectionHadiths(collection.id, sectionNumber)
   const [view, changeView] = useListView()
   const marks = useHadithMarks()
+  const savedSources = useSavedHadithSources()
   const single = sections.length === 1
   const section = sections.find((item) => String(item.number) === String(sectionNumber))
 
@@ -351,7 +363,7 @@ function HadithGrid({ collection, sections, sectionNumber }) {
   return (
     <>
       <Link to={single ? '/books' : `/book/${collection.id}`} className={BACK_LINK}>
-        ← {single ? 'Kitoblar' : collection.nameUz}
+        ← {single ? 'Hadislar' : collection.nameUz}
       </Link>
       {/* Bitta bo'limli kitob ochilganda darhol hadislar chiqadi — ustida kitob haqida ma'lumot */}
       {single ? (
@@ -387,6 +399,7 @@ function HadithGrid({ collection, sections, sectionNumber }) {
           sectionNumber={section.number}
           hadiths={hadiths}
           marks={marks}
+          savedSources={savedSources}
         />
       ) : (
         <div className={GRID}>
@@ -398,6 +411,7 @@ function HadithGrid({ collection, sections, sectionNumber }) {
               hadith={hadith}
               index={index}
               readAt={marks[hadithKey(collection.id, hadith.number)]}
+              saved={savedSources.has(hadithReminderSource(collection.id, hadith.number))}
             />
           ))}
         </div>
@@ -416,7 +430,7 @@ export default function HadithBookPage() {
       <div className="space-y-4">
         <Alert>{error}</Alert>
         <Link to="/books" className="text-accent text-sm font-semibold">
-          ← Kitoblar
+          ← Hadislar
         </Link>
       </div>
     )

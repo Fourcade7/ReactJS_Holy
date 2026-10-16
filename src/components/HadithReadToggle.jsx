@@ -11,8 +11,9 @@ export const READ_ROW = 'bg-emerald-500/[0.07]!'
  * «O'qildi» doirachasi (suralardagi SurahReadToggle kabi). Link ichida turgani uchun bosilganda
  * sahifa ochilmaydi — faqat belgi almashadi. Kartochkada burchakka qo'yiladi (standart),
  * ro'yxatda qatorning o'z ustunida turadi. partial — bir qismi belgilangan bo'lim.
+ * Kitoblar sahifasi (hikmatlar) ham shu tugmani ishlatadi.
  */
-function ToggleButton({ done, partial = false, onToggle, title, label, className }) {
+export function ToggleButton({ done, partial = false, onToggle, title, label, className }) {
   return (
     <button
       type="button"
@@ -49,14 +50,15 @@ function ToggleButton({ done, partial = false, onToggle, title, label, className
   )
 }
 
-/** Kitob yoki bo'lim sarlavhasidagi holat — suradagi «12/48 bet o'qildi · 36 ta qoldi» kabi */
-export function ReadStatusBadge({ status }) {
+/** Kitob yoki bo'lim sarlavhasidagi holat — suradagi «12/48 bet o'qildi · 36 ta qoldi» kabi.
+    itemName — kitoblarda «hikmat» kabi */
+export function ReadStatusBadge({ status, itemName = 'hadis' }) {
   if (!status.read) return null
   return (
     <Badge className="bg-emerald-500/10! text-emerald-500! tabular-nums">
       {status.done
-        ? `✓ Toʻliq oʻqildi · ${status.total} ta hadis`
-        : `${status.read}/${status.total} hadis oʻqildi · ${status.total - status.read} ta qoldi`}
+        ? `✓ Toʻliq oʻqildi · ${status.total} ta ${itemName}`
+        : `${status.read}/${status.total} ${itemName} oʻqildi · ${status.total - status.read} ta qoldi`}
     </Badge>
   )
 }

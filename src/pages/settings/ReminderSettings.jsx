@@ -20,6 +20,12 @@ import {
 } from '../../lib/reminders.js'
 import { formatReadAt } from '../../lib/xatm.js'
 
+const TITLE_PLACEHOLDERS = {
+  ayah: 'Masalan: Baqara surasi, 286-oyat',
+  hadith: 'Masalan: Sahih Buxoriy, 1-hadis',
+  hikmat: 'Masalan: Sabr haqida',
+}
+
 function ReminderForm({ onDone }) {
   const [type, setType] = useState('ayah')
   const [title, setTitle] = useState('')
@@ -52,7 +58,7 @@ function ReminderForm({ onDone }) {
           <Input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder={type === 'ayah' ? 'Masalan: Baqara surasi, 286-oyat' : 'Masalan: Sabr haqida'}
+            placeholder={TITLE_PLACEHOLDERS[type]}
             autoFocus
           />
         </Field>
@@ -63,7 +69,7 @@ function ReminderForm({ onDone }) {
             dir="auto"
             value={text}
             onChange={(event) => setText(event.target.value)}
-            placeholder="Oyat yoki hikmat matnini shu yerga yozing yoki joylang"
+            placeholder="Oyat, hadis yoki hikmat matnini shu yerga yozing yoki joylang"
           />
         </Field>
 
@@ -153,7 +159,7 @@ export default function ReminderSettings() {
       {reminders.length === 0 && !adding ? (
         <EmptyState
           title="Hali eslatma yoʻq"
-          hint="Yoqqan oyat yoki hikmatingizni nusxalab, «Eslatma qoʻshish» orqali saqlang."
+          hint="Yoqqan oyat, hadis yoki hikmatingizni nusxalab, «Eslatma qoʻshish» orqali saqlang."
         />
       ) : null}
 

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import DEFAULT_REMINDERS from '../data/default-reminders.json'
+import { hadithKey } from './hadithMarks.js'
 
 /* Foydalanuvchi o'zi kiritgan eslatmalar — [{ id, type, title, text, createdAt }, …] */
 const KEY = 'reminders'
@@ -9,6 +10,7 @@ const SEEDED_KEY = 'reminders-seeded'
 
 export const REMINDER_TYPES = [
   { value: 'ayah', label: 'Oyat' },
+  { value: 'hadith', label: 'Hadis' },
   { value: 'hikmat', label: 'Hikmat' },
 ]
 
@@ -69,7 +71,8 @@ function writeReminders(list) {
   window.dispatchEvent(new CustomEvent(EVENT, { detail: list }))
 }
 
-/* `source` — oyat tarjimasidan saqlanganda qaysi oyatligi ("112:1"), qayta saqlanmasligi uchun */
+/* `source` — oyat tarjimasidan saqlanganda qaysi oyatligi ("112:1"), hadisdan saqlanganda
+   "hadith:bukhari:12" — qayta saqlanmasligi uchun */
 export function addReminder({ type, title, text, source }) {
   const reminder = {
     id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
@@ -106,6 +109,22 @@ export function useReminders() {
   }, [])
 
   return value
+}
+
+/* Hadisdan saqlangan eslatmaning `source`i: "hadith:bukhari:12" — oyatlarning "2:255" kalitlari bilan to'qnashmaydi */
+export const hadithReminderSource = (collectionId, number) =>
+  `hadith:${hadithKey(collectionId, number)}`
+
+/* Eslatmalarga saqlangan hadislar — ro'yxat va kartalarda belgi ko'rsatish uchun */
+export function useSavedHadithSources() {
+  const reminders = useReminders()
+  return useMemo(
+    () =>
+      new Set(
+        reminders.map((item) => item.source).filter((source) => source?.startsWith('hadith:')),
+      ),
+    [reminders],
+  )
 }
 
 /* Dastur har ochilganda bitta tasodifiy eslatma tanlanadi va shu seans davomida o'zgarmaydi */
