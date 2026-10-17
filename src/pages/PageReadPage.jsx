@@ -242,7 +242,7 @@ export default function PageReadPage() {
             </AyahHoverScope>
 
             {page.note ? (
-              <p className="border-line text-ink-faint mt-8 border-t pt-5 text-sm leading-relaxed whitespace-pre-wrap">
+              <p className="border-line text-ink-faint txt-uz-sub mt-8 border-t pt-5 whitespace-pre-wrap">
                 {page.note}
               </p>
             ) : null}

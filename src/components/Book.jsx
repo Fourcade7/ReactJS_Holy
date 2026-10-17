@@ -3,6 +3,7 @@ import { toggleBookItemRead } from '../lib/bookMarks.js'
 import { itemLabel, itemPath } from '../lib/books.js'
 import { formatReadAt } from '../lib/xatm.js'
 import { ToggleButton } from './HadithReadToggle.jsx'
+import TanwirText from './TanwirText.jsx'
 import { Card, cn } from './Ui.jsx'
 
 /* Hadis kitoblari sahifasi bilan bir xil to'r va «orqaga» havolasi */
@@ -38,6 +39,13 @@ export function ReaderBackLink({ to, children }) {
  * havolalarning har bir raqami o'sha bo'lakni ochadi. Raqam kitobda bo'lmasa — oddiy matn.
  */
 export function LinkedText({ text, book }) {
+  if (book.id === 'tanwir') {
+    return <TanwirText text={text}>{(piece) => <ItemLinks text={piece} book={book} />}</TanwirText>
+  }
+  return <ItemLinks text={text} book={book} />
+}
+
+function ItemLinks({ text, book }) {
   const pattern = new RegExp(
     `\\d+(?:–\\d+)?(?:(?:,\\s*|\\s+va\\s+)\\d+(?:–\\d+)?)*(?=-${book.itemName})`,
     'g',
@@ -100,7 +108,7 @@ function Block({ block, book, Heading }) {
         </h2>
       )
     case 'h':
-      return <Heading className="text-ink pt-3 text-lg font-bold tracking-tight">{block.text}</Heading>
+      return <Heading className="text-ink txt-uz-heading pt-3 font-bold tracking-tight">{block.text}</Heading>
     case 'quote':
       /* Sheʼr: har qator — alohida misra; sigʻmagan misraning davomi ichkariroqdan boshlanadi */
       return (

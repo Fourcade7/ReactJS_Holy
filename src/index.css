@@ -164,6 +164,12 @@
     line-height: 1.9;
   }
 
+  /* Kitob matni ichidagi sarlavhalar — tarjima bilan birga kattalashadi */
+  .txt-uz-heading {
+    font-size: calc(18px * var(--uz-scale));
+    line-height: 1.5;
+  }
+
   /* Transkripsiya, tafsir kabi ikkinchi darajali matnlar */
   .txt-uz-sub {
     font-size: calc(14px * var(--uz-scale));
