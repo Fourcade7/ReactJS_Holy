@@ -34,12 +34,15 @@ export function ReaderBackLink({ to, children }) {
   )
 }
 
+/* Oyat kartochkalari va ismlar bezagi (TanwirText) qo'llanadigan kitoblar */
+const RICH_TEXT_BOOKS = new Set(['tanwir', 'tahajjud'])
+
 /**
  * Matndagi «250-hikmatga qarang», «(99, 176–178-hikmatlar)», «30 va 31-hikmatlar» kabi
  * havolalarning har bir raqami o'sha bo'lakni ochadi. Raqam kitobda bo'lmasa — oddiy matn.
  */
 export function LinkedText({ text, book }) {
-  if (book.id === 'tanwir') {
+  if (RICH_TEXT_BOOKS.has(book.id)) {
     return <TanwirText text={text}>{(piece) => <ItemLinks text={piece} book={book} />}</TanwirText>
   }
   return <ItemLinks text={text} book={book} />
@@ -110,15 +113,27 @@ function Block({ block, book, Heading }) {
     case 'h':
       return <Heading className="text-ink txt-uz-heading pt-3 font-bold tracking-tight">{block.text}</Heading>
     case 'quote':
-      /* Sheʼr: har qator — alohida misra; sigʻmagan misraning davomi ichkariroqdan boshlanadi */
+      /* Sheʼr: har qator — alohida misra; sigʻmagan misraning davomi ichkariroqdan boshlanadi.
+         Misralar kenglik bo'ylab cho'zilmaydi — chapga tekis. Bo'sh qator — baytlar orasidagi bo'shliq */
       return (
-        <blockquote className="border-accent/60 txt-uz text-ink border-l-2 pl-4">
-          {block.text.split('\n').map((line, index) => (
-            <span key={index} className="block pl-5 -indent-5">
-              <LinkedText text={line} book={book} />
-            </span>
-          ))}
+        <blockquote className="border-accent/60 txt-uz text-ink border-l-2 pl-4 text-left">
+          {block.text.split('\n').map((line, index) =>
+            line ? (
+              <span key={index} className="block pl-5 -indent-5">
+                <LinkedText text={line} book={book} />
+              </span>
+            ) : (
+              <span key={index} className="block h-3" aria-hidden="true" />
+            ),
+          )}
         </blockquote>
+      )
+    case 'arabic':
+      /* Oyat yoki duoning arabcha matni — markazda, arabcha matn o'lchami sozlamasiga bog'liq */
+      return (
+        <p lang="ar" dir="rtl" className="arabic-hadith txt-arabic text-ink text-center!">
+          {block.text}
+        </p>
       )
     case 'list': {
       const List = block.ordered ? 'ol' : 'ul'
@@ -162,9 +177,10 @@ function Block({ block, book, Heading }) {
 
 /**
  * Kitob matni (Muqaddima, Atamalar lug'ati, bob): bloklar ketma-ketligi.
- * { type: "section" | "h" | "p" | "quote", text } — section: «Qisqacha mazmun», «Sharh» kabi asosiy qism;
+ * { type: "section" | "h" | "p" | "quote" | "arabic", text } — section: «Qisqacha mazmun», «Sharh» kabi asosiy qism;
+ * arabic — oyat yoki duoning arabcha matni;
  * { type: "list", ordered?, start?, items } — band matn yoki { text, items }; { type: "terms", items: [{ term, text }] }.
- * Matndagi "\n" — paragraf ichidagi yangi qator (PDF'dagi kabi), quote'da — sheʼr misrasi.
+ * Matndagi "\n" — paragraf ichidagi yangi qator (PDF'dagi kabi), quote'da — sheʼr misrasi (bo'sh qator — baytlar orasi).
  */
 export function BookBlocks({ blocks, book }) {
   /* Asosiy qismlar bo'lsa, ichidagi sarlavhalar bir daraja pastda */

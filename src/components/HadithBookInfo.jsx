@@ -24,7 +24,7 @@ export default function HadithBookInfo({ collection }) {
       </div>
 
       {collection.descriptionUz ? (
-        <p className="text-ink-soft mt-4 max-w-4xl text-[15px] leading-relaxed">
+        <p className="text-ink-soft mt-4 max-w-4xl text-justify text-[15px] leading-relaxed">
           {collection.descriptionUz}
         </p>
       ) : null}

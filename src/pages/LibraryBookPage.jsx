@@ -34,7 +34,7 @@ function BookInfo({ book, status, nextUnread }) {
       </div>
 
       {book.descriptionUz ? (
-        <p className="text-ink-soft mt-4 max-w-4xl text-[15px] leading-relaxed">
+        <p className="text-ink-soft mt-4 max-w-4xl text-justify text-[15px] leading-relaxed">
           {book.descriptionUz}
         </p>
       ) : null}

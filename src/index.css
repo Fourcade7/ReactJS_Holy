@@ -158,10 +158,11 @@
     font-size: calc(26px * var(--arabic-scale));
   }
 
-  /* O'zbekcha tarjima */
+  /* O'zbekcha tarjima. O'zbekcha matnlar Word'dagi kabi sahifa kengligi bo'ylab tekislanadi */
   .txt-uz {
     font-size: calc(17px * var(--uz-scale));
     line-height: 1.9;
+    text-align: justify;
   }
 
   /* Kitob matni ichidagi sarlavhalar — tarjima bilan birga kattalashadi */
@@ -174,6 +175,7 @@
   .txt-uz-sub {
     font-size: calc(14px * var(--uz-scale));
     line-height: 1.75;
+    text-align: justify;
   }
 
   @media (min-width: 640px) {

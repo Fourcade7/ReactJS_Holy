@@ -1,7 +1,8 @@
 import { Fragment } from 'react'
 
 /**
- * «At-Tanvir fi isqot at-tadbir» matni uchun bezak (faqat shu kitobda — Book.jsx dagi LinkedText chaqiradi):
+ * «At-Tanvir fi isqot at-tadbir» va «Tahajjud va uni osonlashtiruvchi sabablar» matni uchun bezak
+ * (Book.jsx dagi LinkedText chaqiradi):
  *   - «oyat» (Sura, 14) yoki „oyat“ (Sura, 3–4) — oyat tarjimasidagi tafsir paneli uslubida alohida kartochka;
  *   - Alloh, Rasululloh, Paygʻambar, Muhammad (sollallohu alayhi vasallam bilan birga) — qalin.
  * Iqtibos ichidagi oyat („…“) ham ajratiladi. `children` — qolgan oddiy matnni chizuvchi funksiya (havolalar uchun).

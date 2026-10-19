@@ -42,7 +42,9 @@ export function ReminderText({ text, verses = [], compact = false, className }) 
         ) : (
           <p
             key={index}
-            className={compact ? 'text-ink-soft text-sm leading-relaxed' : 'txt-uz text-ink-soft'}
+            className={
+              compact ? 'text-ink-soft text-justify text-sm leading-relaxed' : 'txt-uz text-ink-soft'
+            }
           >
             {line}
           </p>
