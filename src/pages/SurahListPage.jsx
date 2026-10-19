@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { errorMessage, surahApi } from '../api/client.js'
 import MushafExcerpt from '../components/MushafExcerpt.jsx'
+import RandomHadith from '../components/RandomHadith.jsx'
 import TodayReminder from '../components/TodayReminder.jsx'
 import {
   Alert,
@@ -45,6 +46,7 @@ const HOME_TABS = [
       caption: 'Baqara surasi, 285–286-oyatlar · 49-sahifa',
     },
   },
+  { id: 'hadith', label: 'Tasodifiy hadis' },
 ]
 
 /* Surani o'qildi deb belgilash — shu suraning barcha betlari belgilanadi.
@@ -245,6 +247,7 @@ export default function SurahListPage() {
     <>
       <Tabs tabs={HOME_TABS} value={tab} onChange={setTab} className="mb-3" />
       {tab === 'reminder' ? <TodayReminder reminders={reminders} className="mb-6" /> : null}
+      {tab === 'hadith' ? <RandomHadith className="mb-6" /> : null}
       {HOME_TABS.map((item) =>
         item.excerpt && tab === item.id ? (
           <MushafExcerpt key={item.id} {...item.excerpt} className="mb-6" />
