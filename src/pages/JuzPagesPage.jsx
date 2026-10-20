@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { errorMessage, pageApi, surahApi } from '../api/client.js'
+import BackLink from '../components/BackLink.jsx'
 import PageTiles, {
   PageTilesSkeleton,
   useDayColors,
@@ -92,15 +93,7 @@ export default function JuzPagesPage() {
 
   return (
     <>
-      <Link
-        to="/juz"
-        className="text-ink-faint hover:text-accent mb-5 inline-flex items-center gap-1.5 text-[13px] font-semibold transition-colors"
-      >
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-        Juzlar
-      </Link>
+      <BackLink to="/juz" label="Juzlar" />
 
       <Alert>{error}</Alert>
 

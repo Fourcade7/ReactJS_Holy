@@ -4,6 +4,7 @@ import { readingWidth } from '../lib/display.js'
 import { useReadingTracker } from '../lib/readingTime.js'
 import { SETTINGS_PATH, useRememberReturnPoint } from '../lib/returnPoint.js'
 import { isSection } from '../lib/sections.js'
+import { HeaderBackLink } from './BackLink.jsx'
 import ContinueReading from './ContinueReading.jsx'
 import QuranNav from './QuranNav.jsx'
 import ReadingTimeBadge from './ReadingTimeBadge.jsx'
@@ -64,7 +65,8 @@ export default function Layout() {
             </svg>
           </button>
 
-          <Link to="/" className="flex w-[228px] flex-none items-center gap-2.5">
+          {/* Sidebar kengligiga tekislangan; tor ekranda sidebar yo'q — orqaga tugmasiga joy qoladi */}
+          <Link to="/" className="flex flex-none items-center gap-2.5 sm:w-[228px]">
             <span className="bg-accent font-arabic flex h-9 w-9 items-center justify-center rounded-md text-base text-white">
               ق
             </span>
@@ -81,6 +83,8 @@ export default function Layout() {
           <div className="hidden sm:block">
             <QuranNav />
           </div>
+
+          <HeaderBackLink />
 
           <div className="ml-auto flex items-center gap-2">
             <ReadingTimeBadge />

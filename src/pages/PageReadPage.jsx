@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { errorMessage, pageApi, surahApi } from '../api/client.js'
+import BackLink from '../components/BackLink.jsx'
 import MushafPage from '../components/MushafPage.jsx'
 import PageReadMark from '../components/PageReadMark.jsx'
 import PageTranslation from '../components/PageTranslation.jsx'
@@ -132,37 +133,26 @@ export default function PageReadPage() {
         {juz ? <span>Juz {juz}</span> : null}
       </div>
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Link
-          to={
-            contextSurah
-              ? `/surah/${contextSurah}/pages`
-              : contextJuz
-                ? `/juz/${contextJuz}/pages`
-                : '/pages'
-          }
-          className="text-ink-faint hover:text-accent inline-flex items-center gap-1.5 text-[13px] font-semibold transition-colors"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          {contextSurah
+      <BackLink
+        to={
+          contextSurah
+            ? `/surah/${contextSurah}/pages`
+            : contextJuz
+              ? `/juz/${contextJuz}/pages`
+              : '/pages'
+        }
+        label={
+          contextSurah
             ? surahNames[contextSurah]
               ? `${surahNames[contextSurah]} sahifalari`
               : 'Sura sahifalari'
             : contextJuz
               ? `${contextJuz}-juz sahifalari`
-              : 'Sahifalar'}
-        </Link>
+              : 'Sahifalar'
+        }
+      />
 
+      <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
         <Segmented options={TEXT_MODES} value={textMode} onChange={setTextMode} />
       </div>
 

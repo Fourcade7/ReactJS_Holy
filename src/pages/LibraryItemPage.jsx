@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { BookBlocks, LinkedText, ReaderBackLink } from '../components/Book.jsx'
+import BackLink from '../components/BackLink.jsx'
+import { BookBlocks, LinkedText } from '../components/Book.jsx'
 import { ReadMarkButton } from '../components/PageReadMark.jsx'
 import { ReaderPager } from '../components/Quran.jsx'
 import { Alert, Card, Diamond, Loader } from '../components/Ui.jsx'
@@ -97,7 +98,7 @@ export default function LibraryItemPage() {
 
   return (
     <>
-      <ReaderBackLink to={bookPath(id)}>{book.nameUz}</ReaderBackLink>
+      <BackLink to={bookPath(id)} label={book.nameUz} />
 
       {item.blocks ? <Chapter book={book} item={item} /> : <SayingCard book={book} item={item} />}
 

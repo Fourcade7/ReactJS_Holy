@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { BookBlocks, ReaderBackLink } from '../components/Book.jsx'
+import BackLink from '../components/BackLink.jsx'
+import { BookBlocks } from '../components/Book.jsx'
 import { ReaderPager } from '../components/Quran.jsx'
 import { Alert, Loader, PageHeader } from '../components/Ui.jsx'
 import { bookPath, itemLabel, itemPath, textPagePath, useBook } from '../lib/books.js'
@@ -45,7 +46,7 @@ export default function LibraryTextPage() {
 
   return (
     <>
-      <ReaderBackLink to={bookPath(id)}>{book.nameUz}</ReaderBackLink>
+      <BackLink to={bookPath(id)} label={book.nameUz} />
       <PageHeader title={page.title} subtitle={`${book.nameUz} · ${page.summaryUz}`} />
 
       <div key={page.slug} className="animate-rise">

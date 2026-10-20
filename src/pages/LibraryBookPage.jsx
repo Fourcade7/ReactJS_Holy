@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
-import { BACK_LINK, BOOK_GRID, BookItemReadToggle } from '../components/Book.jsx'
+import BackLink from '../components/BackLink.jsx'
+import { BOOK_GRID, BookItemReadToggle } from '../components/Book.jsx'
 import { READ_ROW, READ_TILE, ReadStatusBadge } from '../components/HadithReadToggle.jsx'
 import { Alert, Badge, Card, Diamond, Skeleton, cn } from '../components/Ui.jsx'
 import { LIST_BOX, rowClass, useListView, ViewToggle } from '../components/ViewToggle.jsx'
@@ -200,9 +201,7 @@ export default function LibraryBookPage() {
 
   return (
     <>
-      <Link to="/library" className={BACK_LINK}>
-        ← Kitoblar
-      </Link>
+      <BackLink to="/library" label="Kitoblar" />
       <BookInfo book={book} status={status} nextUnread={nextUnread} />
 
       {book.noteUz ? (

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import BackLink from '../components/BackLink.jsx'
 import HadithBookInfo from '../components/HadithBookInfo.jsx'
 import HadithReadToggle, {
   READ_ROW,
@@ -39,9 +40,6 @@ import { hadithReminderSource, useSavedHadithSources } from '../lib/reminders.js
 /* Suralar ro'yxati bilan bir xil to'r: tor ekranda 1, sm da 2, keng ekranda 3 ustun.
    grid-cols-1 shart: aks holda bir ustunli to'r uzun matn kengligiga cho'zilib, ekrandan chiqib ketadi */
 const GRID = 'grid grid-cols-1 gap-3 sm:grid-cols-2 min-[75rem]:grid-cols-3'
-
-const BACK_LINK =
-  'text-ink-faint hover:text-ink mb-4 inline-block text-sm font-semibold transition-colors'
 
 function GridSkeleton() {
   return (
@@ -317,9 +315,7 @@ function SectionGrid({ collection, sections }) {
 
   return (
     <>
-      <Link to="/books" className={BACK_LINK}>
-        ← Hadislar
-      </Link>
+      <BackLink to="/books" label="Hadislar" />
       <HadithBookInfo collection={collection} />
 
       <ViewBar view={view} onChange={changeView} />
@@ -362,9 +358,10 @@ function HadithGrid({ collection, sections, sectionNumber }) {
 
   return (
     <>
-      <Link to={single ? '/books' : `/book/${collection.id}`} className={BACK_LINK}>
-        ← {single ? 'Hadislar' : collection.nameUz}
-      </Link>
+      <BackLink
+        to={single ? '/books' : `/book/${collection.id}`}
+        label={single ? 'Hadislar' : collection.nameUz}
+      />
       {/* Bitta bo'limli kitob ochilganda darhol hadislar chiqadi — ustida kitob haqida ma'lumot */}
       {single ? (
         <HadithBookInfo collection={collection} />

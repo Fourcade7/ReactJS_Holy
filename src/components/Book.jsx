@@ -6,33 +6,8 @@ import { ToggleButton } from './HadithReadToggle.jsx'
 import TanwirText from './TanwirText.jsx'
 import { Card, cn } from './Ui.jsx'
 
-/* Hadis kitoblari sahifasi bilan bir xil to'r va «orqaga» havolasi */
+/* Hadis kitoblari sahifasi bilan bir xil to'r */
 export const BOOK_GRID = 'grid grid-cols-1 gap-3 sm:grid-cols-2 min-[75rem]:grid-cols-3'
-export const BACK_LINK =
-  'text-ink-faint hover:text-ink mb-4 inline-block text-sm font-semibold transition-colors'
-
-/** O'qish sahifalari tepasidagi «‹ Kitob nomi» havolasi — hadis sahifasidagi kabi */
-export function ReaderBackLink({ to, children }) {
-  return (
-    <Link
-      to={to}
-      className="text-ink-faint hover:text-accent mb-5 inline-flex min-w-0 items-center gap-1.5 text-[13px] font-semibold transition-colors"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        className="h-4 w-4 flex-none"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
-      <span className="truncate">{children}</span>
-    </Link>
-  )
-}
 
 /* Oyat kartochkalari va ismlar bezagi (TanwirText) qo'llanadigan kitoblar */
 const RICH_TEXT_BOOKS = new Set(['tanwir', 'tahajjud'])

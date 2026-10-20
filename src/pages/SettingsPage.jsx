@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { useLocation, useSearchParams } from 'react-router-dom'
+import BackLink from '../components/BackLink.jsx'
 import { PageHeader, Tabs } from '../components/Ui.jsx'
 import { readReturnPoint, restoreScroll } from '../lib/returnPoint.js'
 import DataSourceSettings from './settings/DataSourceSettings.jsx'
@@ -43,30 +44,12 @@ const TABS = [
 ]
 
 /* Sozlamalarga kelishdan oldingi sahifaga qaytish — o'sha joyiga aylantirib */
-function BackLink() {
+function ReturnLink() {
   /* Sozlamalarda turganda qaytish nuqtasi o'zgarmaydi — bir marta o'qiladi */
   const [back] = useState(readReturnPoint)
+  const restore = useCallback(() => restoreScroll(back), [back])
 
-  return (
-    <Link
-      to={back.path}
-      onClick={() => restoreScroll(back)}
-      className="text-ink-faint hover:text-accent mb-4 inline-flex max-w-full items-center gap-1.5 text-[13px] font-semibold transition-colors"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        className="h-4 w-4 flex-none"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
-      <span className="truncate">{back.label}</span>
-    </Link>
-  )
+  return <BackLink to={back.path} label={back.label} onClick={restore} />
 }
 
 export default function SettingsPage() {
@@ -85,7 +68,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <BackLink />
+      <ReturnLink />
       <PageHeader title="Sozlamalar" subtitle={active.hint} />
 
       <Tabs tabs={TABS} value={tab} onChange={setTab} className="mb-6" />

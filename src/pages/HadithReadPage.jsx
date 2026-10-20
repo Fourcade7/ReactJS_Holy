@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import BackLink from '../components/BackLink.jsx'
 import HadithCard from '../components/HadithCard.jsx'
 import HadithReminderButton from '../components/HadithReminderButton.jsx'
 import { ReadMarkButton } from '../components/PageReadMark.jsx'
@@ -78,24 +79,9 @@ export default function HadithReadPage() {
 
   return (
     <>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <Link
-          to={backTo}
-          className="text-ink-faint hover:text-accent inline-flex min-w-0 items-center gap-1.5 text-[13px] font-semibold transition-colors"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="h-4 w-4 flex-none"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          <span className="truncate">{backLabel}</span>
-        </Link>
+      <BackLink to={backTo} label={backLabel} />
+
+      <div className="mb-5 flex flex-wrap items-center justify-end gap-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <HadithReminderButton collection={collection} hadith={hadith} />
           <Segmented options={TEXT_MODES} value={textMode} onChange={setTextMode} />
