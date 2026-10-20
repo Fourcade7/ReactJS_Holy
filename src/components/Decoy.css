@@ -1,0 +1,76 @@
+/* Edge "Новая вкладка" niqobi — ElectronJS_Holy/decoy/index.html dan ko'chirilgan.
+   Ilova uslublariga tegmasligi uchun hammasi .decoy ichida. */
+.decoy { position: fixed; inset: 0; z-index: 100; overflow: hidden; background: #333;
+         font: 12px 'Segoe UI', sans-serif; color: #fff; user-select: none; }
+.decoy * { box-sizing: border-box; margin: 0; padding: 0; }
+.decoy img { display: block; position: absolute; pointer-events: none; max-width: none; }
+.decoy button { all: unset; position: absolute; border-radius: 4px; }
+.decoy button:hover { background: rgba(255, 255, 255, 0.07); }
+.decoy button:active { background: rgba(255, 255, 255, 0.04); }
+
+/* Oddiy vkladkada haqiqiy brauzer paneli bor — soxtasi faqat to'liq ekranda chiziladi */
+.decoy:not(.framed) .chrome { display: none; }
+.decoy:not(.framed) #page { inset: 0; border: 0; border-radius: 0; }
+
+/* tab strip */
+.decoy #strip { position: absolute; left: 0; top: 0; right: 0; height: 39px; background: #000; }
+.decoy #tab-actions { left: 4px; top: 4px; width: 32px; height: 30px; border-radius: 6px; background: #1f1f1f; }
+.decoy #tab-actions:hover { background: #2b2b2b; }
+.decoy #tab { position: absolute; left: 40px; top: 3px; width: 240px; height: 36px; background: #333; border-radius: 8px 8px 0 0; }
+.decoy #tab::before, .decoy #tab::after { content: ''; position: absolute; bottom: 0; width: 8px; height: 8px; }
+.decoy #tab::before { left: -8px; background: radial-gradient(circle at 0 0, transparent 7.5px, #333 8.5px); }
+.decoy #tab::after { right: -8px; background: radial-gradient(circle at 100% 0, transparent 7.5px, #333 8.5px); }
+.decoy #tab-title { position: absolute; left: 33px; top: 8px; width: 170px; line-height: 16px; white-space: nowrap; overflow: hidden; }
+.decoy #tab-close { left: 214px; top: 6px; width: 20px; height: 20px; }
+.decoy #new-tab { left: 284px; top: 4px; width: 32px; height: 30px; border-radius: 6px; }
+
+/* toolbar + favorites bar */
+.decoy .tb { top: 43px; width: 36px; height: 32px; }
+.decoy #back { left: 2px; }
+.decoy #refresh { left: 38px; }
+.decoy #omnibox { position: absolute; left: 75px; right: 204px; top: 42px; height: 34px; border-radius: 17px;
+                  background: #242424; border: 2px solid transparent; }
+.decoy #omnibox:focus-within { border-color: #235ccf; }
+.decoy #omnibox input { all: unset; position: absolute; left: 31px; right: 14px; top: 0; height: 30px;
+                        font: 14px 'Segoe UI', sans-serif; color: #fff; caret-color: #fff; }
+.decoy #fav-star { right: 167px; }
+.decoy #avatar { right: 130px; }
+.decoy #more { right: 95px; }
+.decoy #copilot { right: 28px; top: 43px; width: 65px; height: 32px; border-radius: 16px 0 0 16px; background: #3f3f3f; }
+.decoy #copilot:hover { background: #3f3f3f; }
+.decoy #copilot:hover::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: rgba(255, 255, 255, 0.06); }
+.decoy #copilot span { position: absolute; left: 37px; top: 7px; line-height: 16px; }
+.decoy #copilot-more { right: 4px; top: 43px; width: 24px; height: 32px; }
+.decoy #fav-left { left: 4px; top: 81px; width: 32px; height: 28px; }
+.decoy #fav-import { left: 48px; top: 81px; width: 150px; height: 28px; }
+.decoy #fav-import span { position: absolute; left: 30px; top: 5px; line-height: 16px; }
+.decoy #fav-sep { position: absolute; left: 208px; top: 87px; width: 1px; height: 16px; background: #7a7a7a; }
+.decoy #fav-msg { position: absolute; left: 224px; right: 8px; top: 86px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.decoy #fav-msg a { color: #a7c9fc; font-weight: 600; text-decoration: underline; cursor: pointer; }
+
+/* new tab page */
+.decoy #page { position: absolute; left: 3px; top: 112px; right: 3px; bottom: 3px; border: 1px solid #3f3f3f; border-radius: 8px;
+               overflow: hidden; background: #1c1a26 center / cover no-repeat; font-family: 'Segoe UI', sans-serif; }
+.decoy #page::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+                       background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.15) 320px, rgba(0, 0, 0, 0) 60%); }
+.decoy #page button:hover { background: rgba(255, 255, 255, 0.1); }
+.decoy #waffle { left: 24px; top: 23px; width: 40px; height: 40px; }
+.decoy #pencil { right: 154px; top: 23px; width: 40px; height: 40px; }
+.decoy #gear { right: 114px; top: 23px; width: 40px; height: 40px; }
+.decoy #page svg { position: absolute; left: 10px; top: 10px; width: 20px; height: 20px; fill: #fff; }
+.decoy #signin { right: 24px; top: 24px; width: 82px; height: 37px; border: 1px solid rgba(255, 255, 255, 0.35);
+                 background: rgba(255, 255, 255, 0.04); text-align: center; line-height: 35px; font-size: 14px; }
+.decoy #search { position: absolute; left: 50%; top: 78px; width: min(800px, calc(100% - 32px)); transform: translateX(-50%);
+                 height: 56px; border-radius: 24px; background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14); }
+.decoy #search svg { left: 12px; top: 16px; width: 24px; height: 24px; fill: #707070; }
+.decoy #search input { all: unset; position: absolute; left: 51px; right: 20px; top: 0; height: 54px;
+                       font: 16px 'Segoe UI', sans-serif; color: #1a1a1a; }
+.decoy #search input::placeholder { color: #6b6b6b; }
+.decoy #quick { position: absolute; left: 50%; top: 143px; width: min(765px, calc(100% - 32px)); transform: translateX(-50%);
+                display: flex; flex-wrap: wrap; justify-content: center; }
+.decoy .ql { all: unset; position: relative; width: 85px; height: 60px; cursor: pointer; }
+.decoy .ql .tile { position: absolute; left: 24px; top: 0; width: 36px; height: 36px; border-radius: 12px; background: #4a4a4a; overflow: hidden; }
+.decoy .ql .tile img { left: 4px; top: 4px; width: 28px; height: 28px; }
+.decoy .ql:hover .tile::after { content: ''; position: absolute; inset: 0; background: rgba(255, 255, 255, 0.1); }
+.decoy .ql span { position: absolute; left: 0; right: 0; top: 38px; text-align: center; line-height: 16px; font-size: 12px;
+                  white-space: nowrap; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 2px rgba(0, 0, 0, 0.6); }
