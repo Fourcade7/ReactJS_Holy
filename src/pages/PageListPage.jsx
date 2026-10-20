@@ -43,7 +43,8 @@ export default function PageListPage() {
     if (!last) return
     requestAnimationFrame(() => {
       gridRef.current
-        ?.querySelector(`a[href="/page/${last[0]}"]`)
+        /* HashRouter'da havola «#/page/N» bo'ladi — oxiri bo'yicha qidiriladi */
+        ?.querySelector(`a[href$="/page/${last[0]}"]`)
         ?.scrollIntoView({ block: 'center', behavior: 'instant' })
     })
   }, [loading, pages, xatm])

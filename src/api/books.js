@@ -7,7 +7,7 @@
  * Matn PDF'dan bir marta ajratib olingan — keyingi tuzatishlar shu JSON fayllarning o'zida qilinadi.
  */
 
-const DATA_DIR = '/data/books'
+const DATA_DIR = `${import.meta.env.BASE_URL}data/books`
 const requests = new Map()
 
 /* Bir fayl bir marta yuklanadi — bo'laklar orasida yurganda kitob qayta so'ralmaydi */

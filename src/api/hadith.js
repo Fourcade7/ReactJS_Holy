@@ -3,7 +3,7 @@
  * Fayllar `npm run hadith:build` bilan hadith/raw va hadith/translations dan yig'iladi.
  */
 
-const DATA_DIR = '/data/hadith'
+const DATA_DIR = `${import.meta.env.BASE_URL}data/hadith`
 const requests = new Map()
 
 /* Bir fayl bir marta yuklanadi — hadislar orasida yurganda bo'lim qayta so'ralmaydi */

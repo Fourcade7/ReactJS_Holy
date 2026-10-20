@@ -3,7 +3,8 @@
  * Server kerak emas — Qur'on matni o'zgarmagani uchun fayllar tayyor holda turadi.
  */
 
-const DATA_DIR = '/data'
+/* BASE_URL — vite.config.js dagi `base` (GitHub Pages'da /ReactJS_Holy/) */
+const DATA_DIR = `${import.meta.env.BASE_URL}data`
 
 async function request(path) {
   const response = await fetch(`${DATA_DIR}/${path}`)

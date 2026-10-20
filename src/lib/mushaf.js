@@ -9,7 +9,7 @@ export function usePageFont(pageNumber) {
     if (!pageNumber || loadedFonts.has(pageNumber)) return
     const style = document.createElement('style')
     style.dataset.mushafPage = String(pageNumber)
-    style.textContent = `@font-face{font-family:"mushaf-p${pageNumber}";src:url("/fonts/hafs/v1/p${pageNumber}.woff2") format("woff2");font-display:block}`
+    style.textContent = `@font-face{font-family:"mushaf-p${pageNumber}";src:url("${import.meta.env.BASE_URL}fonts/hafs/v1/p${pageNumber}.woff2") format("woff2");font-display:block}`
     document.head.appendChild(style)
     loadedFonts.add(pageNumber)
   }, [pageNumber])

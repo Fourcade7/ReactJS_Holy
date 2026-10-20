@@ -110,8 +110,9 @@ export function restoreScroll({ path, scrollY }) {
       USER_INPUT.forEach((type) => window.removeEventListener(type, stop))
       return
     }
-    /* Sozlamalar sahifasi hali almashmagan bo'lsa, uni aylantirmaymiz */
-    if (window.location.pathname === pathname) {
+    /* Sozlamalar sahifasi hali almashmagan bo'lsa, uni aylantirmaymiz.
+       HashRouter: joriy yo'l «#/surah/2#ayah-5» ko'rinishida hash ichida turadi */
+    if (window.location.hash.slice(1).replace(/[?#].*$/, '') === pathname) {
       const max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
       const top = Math.min(scrollY, max)
       if (Math.abs(window.scrollY - top) > 1) window.scrollTo({ top, behavior: 'instant' })
