@@ -1,16 +1,51 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the Oxlint configuration
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+                    export default defineConfig({
+                    plugins: [react()],
+                    base: '/ReactJS_Holy/',
+                    })
+
+                   .github/workflows/deploy.yml
+
+
+
+                    name: Deploy to GitHub Pages
+  
+                    on:
+                    push:
+                        branches: [main]
+                    workflow_dispatch:
+
+                    permissions:
+                    contents: read
+                    pages: write
+                    id-token: write
+
+                    jobs:
+                    build:
+                        runs-on: ubuntu-latest
+                        steps:
+                        - uses: actions/checkout@v4
+                        - uses: actions/setup-node@v4
+                            with:
+                            node-version: 20
+                        - run: npm ci
+                        - run: npm run build
+                        - uses: actions/upload-pages-artifact@v3
+                            with:
+                            path: ./dist
+
+                    deploy:
+                        needs: build
+                        runs-on: ubuntu-latest
+                        environment:
+                        name: github-pages
+                        url: ${{ steps.deployment.outputs.page_url }}
+                        steps:
+                        - id: deployment
+                            uses: actions/deploy-pages@v4
