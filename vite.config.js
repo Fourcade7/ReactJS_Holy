@@ -7,5 +7,9 @@ export default defineConfig({
   server: {
     port: 5173,
   },
-  base: '/ReactJS_Holy/',
+  // GitHub Pages loyihani /ReactJS_Holy/ sub-yo'lida joylashtiradi, shuning uchun
+  // oddiy `npm run build` shu bazani ishlatadi. Electron ilovasi esa app:// protokoli
+  // orqali ildizdan xizmat qiladi — ElectronJS_Holy/scripts/build-react.js shu uchun
+  // ELECTRON_BUILD=1 bilan chaqiradi.
+  base: process.env.ELECTRON_BUILD ? '/' : '/ReactJS_Holy/',
 })
