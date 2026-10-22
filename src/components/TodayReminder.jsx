@@ -77,19 +77,17 @@ export default function TodayReminder({ reminders, className }) {
     )
   }
 
+  const badgeTone = reminder.type === 'ayah' ? 'accent' : 'neutral'
+
   return (
     <Card className={cn('animate-fade px-4 py-3.5 sm:px-5', className)}>
       <div className="flex flex-wrap items-center gap-2">
-        <Badge tone={reminder.type === 'ayah' ? 'accent' : 'neutral'}>
-          {reminderTypeLabel(reminder.type)}
-        </Badge>
+        <Badge tone={badgeTone}>{reminderTypeLabel(reminder.type)}</Badge>
         {reminders.length > 1 ? (
           <span className="text-ink-faint text-xs">{reminders.length} ta eslatmadan biri</span>
         ) : null}
+        {reminder.title ? <Badge tone={badgeTone}>{reminder.title}</Badge> : null}
       </div>
-      {reminder.title ? (
-        <h2 className="font-display text-ink mt-2 text-xl tracking-tight">{reminder.title}</h2>
-      ) : null}
       <ReminderText text={reminder.text} verses={reminder.verses} className="mt-2" />
     </Card>
   )
