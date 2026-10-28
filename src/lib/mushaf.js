@@ -3,7 +3,12 @@ import { mushafApi } from '../api/client.js'
 
 const loadedFonts = new Set()
 
-/** Har bir mushaf sahifasining o'z KFGQPC shrifti bor: p1, p2, … p604 */
+/**
+ * Har bir mushaf sahifasining o'z KFGQPC shrifti bor: p1, p2, … p604.
+ * Manba: verses.quran.com/fonts/quran/hafs/v1/woff2/ — Quran.com ishlatadigan yangilangan
+ * nusxa. static.qurancdn.com dagi eski nusxada 7 betda (94, 120, 175, 307, 356, 565, 579)
+ * harakatlar qo'shni so'z glifiga chizilgan, masalan 7:188 dagi «لِّقَوۡمٖ» kasrasi.
+ */
 export function usePageFont(pageNumber) {
   useEffect(() => {
     if (!pageNumber || loadedFonts.has(pageNumber)) return

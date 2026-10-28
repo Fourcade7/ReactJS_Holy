@@ -20,8 +20,8 @@ async function measureWidestLine(pageNumber, lines) {
   document.body.appendChild(probe)
   let widest = 0
   for (const line of lines) {
-    /* MushafPage o'lchovi bilan bir xil: so'zlar orasida ingichka probel (U+2009) */
-    probe.textContent = line.words.map((word) => word.code).join(' ')
+    /* MushafPage o'lchovi bilan bir xil: so'zlar orasida shriftning o'z probeli */
+    probe.textContent = line.words.map((word) => word.code).join(' ')
     widest = Math.max(widest, probe.getBoundingClientRect().width)
   }
   probe.remove()
@@ -103,6 +103,9 @@ export default function MushafAyah({
       ref={textRef}
       className="arabic txt-mushaf-ayah text-ink"
       style={{
+        /* So'zlar orasidagi probel ham mushaf shriftidan olinadi (≈0.04em) —
+           so'zlar Quran.com va bosma mushafdagidek zich turadi */
+        fontFamily: `"mushaf-p${pageNumber}"`,
         lineHeight: lineHeight || undefined,
         fontSize: fitToPage && fontSize ? fontSize : undefined,
         /* o'lcham hisoblanguncha ko'rsatmaymiz — harflar sakramasligi uchun */
@@ -117,7 +120,6 @@ export default function MushafAyah({
               'hover:text-accent transition-colors duration-150',
               word.charType === 'end' ? 'text-accent' : '',
             )}
-            style={{ fontFamily: `"mushaf-p${pageNumber}"` }}
           >
             {word.code}
           </span>

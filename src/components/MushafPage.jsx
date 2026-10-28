@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { mushafApi, surahApi } from '../api/client.js'
 import { usePageFont } from '../lib/mushaf.js'
 import { useAyahHoverByKey } from './Quran.jsx'
@@ -340,7 +340,8 @@ export default function MushafPage({ pageNumber, fallback = null, verses = null 
 
   return (
     <div ref={containerRef} dir="rtl" className="relative select-text">
-      {/* o'lchash uchun ko'rinmas nusxa */}
+      {/* o'lchash uchun ko'rinmas nusxa. So'zlar orasida shriftning o'z probeli
+          (1-betda ≈0.29em, qolganlarida ≈0.04em) — satrlar bosma mushafdagidek zich chiqadi */}
       <div
         ref={measureRef}
         aria-hidden
@@ -357,7 +358,7 @@ export default function MushafPage({ pageNumber, fallback = null, verses = null 
               display: 'inline-block',
             }}
           >
-            {line.words.map((word) => word.code).join(' ')}
+            {line.words.map((word) => word.code).join(' ')}
           </div>
         ))}
       </div>
@@ -384,24 +385,28 @@ export default function MushafPage({ pageNumber, fallback = null, verses = null 
           const endsSurah =
             nextLine && nextLine.words[0].surahNumber !== line.words.at(-1).surahNumber
 
+          /* Markazdagi satrda so'zlar orasida shriftning o'z probeli turadi. To'liq
+             satr flex: unda probellar e'tiborsiz qoladi, oraliqni space-between beradi */
           return (
             <div
               key={line.lineNumber}
               className={cn(
-                'flex items-center whitespace-nowrap',
+                'whitespace-nowrap',
                 centered || endsSurah || shortLines.includes(line.lineNumber)
-                  ? 'justify-center gap-x-[0.25em]'
-                  : 'justify-between',
+                  ? 'text-center'
+                  : 'flex items-center justify-between',
               )}
-              style={{ lineHeight: 2 }}
+              style={{ lineHeight: 2, fontFamily: `"mushaf-p${pageNumber}"` }}
             >
               {line.words.map((word, index) => (
-                <MushafWord
-                  key={`${line.lineNumber}-${index}`}
-                  word={word}
-                  pageNumber={pageNumber}
-                  hidden={only ? !only.has(`${word.surahNumber}:${word.ayahNumber}`) : false}
-                />
+                <Fragment key={`${line.lineNumber}-${index}`}>
+                  {index > 0 ? ' ' : null}
+                  <MushafWord
+                    word={word}
+                    pageNumber={pageNumber}
+                    hidden={only ? !only.has(`${word.surahNumber}:${word.ayahNumber}`) : false}
+                  />
+                </Fragment>
               ))}
             </div>
           )
