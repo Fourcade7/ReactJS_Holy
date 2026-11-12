@@ -34,5 +34,17 @@
     "itemName": "bob",
     "itemsTitleUz": "Boblar",
     "totalItems": 10
+  },
+  {
+    "id": "kandari",
+    "nameUz": "Ogʻir sinov va yangi tugʻilish",
+    "nameArabic": "البلاء الشديد والميلاد الجديد",
+    "subtitleUz": "Guantanamoda oʻn toʻrt yil",
+    "authorUz": "Fayiz al-Kandariy",
+    "descriptionUz": "Kuvaytlik Fayiz al-Kandariyning Afgʻoniston va Guantanamodagi Amerika qamoqxonalarida oʻtgan oʻn toʻrt yili (2001–2016) haqidagi xotira kitobi. Bolalik va yoshlik, 2001-yilgi urush va Toʻra-Boʻra, asirlik, Bagram va Qandahor, Guantanamodagi qiynoq va tahqirlar, ochlik eʼlonlari, yakka kamera, iymon, sabr va Qurʼon bilan yengib oʻtilgan sinovlar hamda ozodlik qissasi — muallifning oʻz tilidan. Bagʻishlov, ikki muqaddima va 33 bob.",
+    "noteUz": "Oʻzbekcha tarjima arabcha asl matndan (3-nashr, Kuvayt, 2021) sunʼiy intellekt yordamida toʻliq qilingan va asl sahifalar bilan solishtirib tekshirilgan; mutaxassis tahriridan oʻtmagan. Asl kitobdagi 210 ta sarlavha oʻqishga qulaylik uchun 33 bobga jamlangan, bob nomlari tarjimonniki. Oyatlarning arabcha matni va maʼnolari ilovadagi Qurʼon maʼnolari tarjimasidan olingan. Kitobdagi fikr va baholar muallifga tegishli.",
+    "itemName": "bob",
+    "itemsTitleUz": "Boblar",
+    "totalItems": 33
   }
 ]

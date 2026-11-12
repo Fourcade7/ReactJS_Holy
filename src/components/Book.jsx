@@ -10,7 +10,16 @@ import { Card, cn } from './Ui.jsx'
 export const BOOK_GRID = 'grid grid-cols-1 gap-3 sm:grid-cols-2 min-[75rem]:grid-cols-3'
 
 /* Oyat kartochkalari va ismlar bezagi (TanwirText) qo'llanadigan kitoblar */
-const RICH_TEXT_BOOKS = new Set(['tanwir', 'tahajjud'])
+const RICH_TEXT_BOOKS = new Set(['tanwir', 'tahajjud', 'kandari'])
+/* Ulardan «Muhammad» ismi faqat salavot bilan kelganda ajratiladiganlari (xotira kitobida bu ism boshqa odamlarniki ham) */
+const STRICT_NAME_BOOKS = new Set(['kandari'])
+
+/* Ilovadagi Qurʼon matni (public/data/surah) quran.com kodlashida: sukun — U+0652, sokin harf
+   belgisi («dumaloq nol») — U+06DF. KFGQPC Hafs shrifti esa sukunni U+06E1, dumaloq nolni U+0652
+   deb kutadi — o'girilmasa sukun doiracha, U+06DF esa so'zlar orasida qora nuqta bo'lib chiqadi.
+   Oyat matni (ٱ yoki U+06DF bor) shu shriftga moslab o'giriladi; duo va hadis matniga tegilmaydi. */
+const toHafsFont = (text) =>
+  /[ٱ۟]/.test(text) ? text.replace(/ْ/g, 'ۡ').replace(/۟/g, 'ْ') : text
 
 /**
  * Matndagi «250-hikmatga qarang», «(99, 176–178-hikmatlar)», «30 va 31-hikmatlar» kabi
@@ -18,7 +27,11 @@ const RICH_TEXT_BOOKS = new Set(['tanwir', 'tahajjud'])
  */
 export function LinkedText({ text, book }) {
   if (RICH_TEXT_BOOKS.has(book.id)) {
-    return <TanwirText text={text}>{(piece) => <ItemLinks text={piece} book={book} />}</TanwirText>
+    return (
+      <TanwirText text={text} strictNames={STRICT_NAME_BOOKS.has(book.id)}>
+        {(piece) => <ItemLinks text={piece} book={book} />}
+      </TanwirText>
+    )
   }
   return <ItemLinks text={text} book={book} />
 }
@@ -107,7 +120,7 @@ function Block({ block, book, Heading }) {
       /* Oyat yoki duoning arabcha matni — markazda, arabcha matn o'lchami sozlamasiga bog'liq */
       return (
         <p lang="ar" dir="rtl" className="arabic-hadith txt-arabic text-ink text-center!">
-          {block.text}
+          {toHafsFont(block.text)}
         </p>
       )
     case 'list': {
